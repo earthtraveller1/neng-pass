@@ -1,11 +1,8 @@
-use std::{
-    fs::File,
-    io::{BufReader, Read, Write},
-    path::Path,
-};
+use std::{fs::File, io::Write, path::Path};
 
 use clap::{arg, Command};
 use directories::ProjectDirs;
+use sha2::{Sha512, Digest};
 
 fn cli() -> Command {
     Command::new("neng-pass")
@@ -43,7 +40,8 @@ fn main() {
             let master_key_file = File::create(format!("{}/master_key", data_dir));
 
             if let Ok(mut master_key_file) = master_key_file {
-                if let Err(err) = master_key_file.write_all(new_key.as_bytes()) {
+                let hashed_new_key = Sha512::digest(new_key);
+                if let Err(err) = master_key_file.write_all(hashed_new_key.as_slice()) {
                     eprintln!("[ERROR]: Failed to write to the master key file. {}", err);
                     std::process::exit(1);
                 }
@@ -51,6 +49,8 @@ fn main() {
                 eprintln!("[ERROR]: Failed to open or create the master key file.");
                 std::process::exit(1);
             }
+
+            eprintln!("Successfully updated the master key file.");
         }
         _ => {
             panic!("truly a bruh moment, this should be unreachable");
