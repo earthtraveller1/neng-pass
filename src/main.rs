@@ -1,4 +1,4 @@
-use std::{fs::File, io::Write, path::Path};
+use std::{fs::File, io::{Write, Read}, path::Path};
 
 use clap::{arg, Command};
 use directories::ProjectDirs;
@@ -36,6 +36,24 @@ fn main() {
 
     match cli_matches.subcommand() {
         Some(("set-master", sub_matches)) => {
+            let master_key_file = File::open(format!("{}/master_key", data_dir));
+            if let Ok(mut master_key_file) = master_key_file {
+                eprint!("Please enter the old master key: ");
+
+                let mut user_input_key = String::new();
+                std::io::stdin().read_line(&mut user_input_key).expect("Failed to read the input string.");
+                let user_input_key = user_input_key.trim();
+
+                let user_input_key_hashed = Sha512::digest(user_input_key);
+                let mut actual_key_hashed = Vec::new();
+                master_key_file.read_to_end(&mut actual_key_hashed).expect("Failed to read the master key file.");
+
+                if user_input_key_hashed.as_slice() != actual_key_hashed.as_slice() {
+                    eprintln!("That is incorrect.");
+                    std::process::exit(1);
+                }
+            }
+
             let new_key = sub_matches.get_one::<String>("NEW_KEY").unwrap();
             let master_key_file = File::create(format!("{}/master_key", data_dir));
 
