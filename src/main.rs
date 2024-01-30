@@ -75,6 +75,9 @@ fn main() {
 
     eprintln!("[INFO]: Program data are stored in {}", data_dir);
 
+    let sql_connection = sqlite::open(format!("{}/passwords.db", data_dir)).unwrap();
+    sql_connection.execute("CREATE TABLE IF NOT EXISTS passwords (name TEXT, password BLOB);").unwrap();
+
     match cli_matches.subcommand() {
         Some(("set-master", _)) => {
             let master_key_file = File::open(format!("{}/master_key", data_dir));
@@ -149,16 +152,15 @@ fn main() {
             let cipher = aes::Aes256::new(&master_key_block);
             cipher.encrypt_block(&mut password_block);
 
-            // For debugging purposes
-            eprintln!(
-                "The generated password is {}",
-                String::from_utf8(password).unwrap()
-            );
-            eprintln!(
-                "The encrypted password is {:?}",
-                hex::encode(password_block.as_slice())
-            );
-            eprintln!("The name of the password is {}", name);
+            let sql_statement = "INSERT INTO passwords VALUES (?, ?)";
+            let mut sql_statement = sql_connection.prepare(sql_statement).unwrap();
+            sql_statement.bind((1, name.as_str())).unwrap();
+            sql_statement.bind((2, password_block.as_slice())).unwrap();
+
+            // This is how you run SQLite statements, apparently.
+            sql_statement.iter().for_each(|_|{});
+
+            eprintln!("Created and saved password named '{}'", name);
         }
         _ => {
             panic!("truly a bruh moment, this should be unreachable");
