@@ -4,20 +4,27 @@ use std::{
     path::Path,
 };
 
+use aes::cipher::{generic_array::GenericArray, BlockEncrypt, KeyInit};
 use argon2::{Argon2, PasswordHash, PasswordVerifier};
-use clap::Command;
+use clap::{arg, Command};
 use directories::ProjectDirs;
 use neng_pass::crypto;
-use sqlx::sqlite::SqlitePoolOptions;
+use rand::{distributions, Rng, SeedableRng};
+use rand_chacha::ChaCha20Rng;
+
+const MAX_MASTER_KEY_LEN: usize = 32;
+const MAX_PASSWORD_LEN: usize = 16;
 
 fn cli() -> Command {
     Command::new("neng-pass")
         .about("Basic password manager written in Rust (btw)")
         .subcommand_required(true)
         .arg_required_else_help(true)
+        .subcommand(Command::new("set-master").about("Sets the master key"))
         .subcommand(
-            Command::new("set-master")
-                .about("Sets the master key")
+            Command::new("new")
+                .about("Creates a new password with the specified name.")
+                .arg(arg!(<NAME> "The you want to assign to the password.")),
         )
 }
 
@@ -37,8 +44,7 @@ fn query_master_key(p_master_key_file: &mut File) -> Option<String> {
     let actual_key_hashed = String::from_utf8(actual_key_hashed).ok()?;
 
     let argon2 = Argon2::default();
-    let actual_key_hashed =
-        PasswordHash::new(&actual_key_hashed).unwrap();
+    let actual_key_hashed = PasswordHash::new(&actual_key_hashed).unwrap();
 
     if argon2
         .verify_password(user_input_key.as_bytes(), &actual_key_hashed)
@@ -51,8 +57,7 @@ fn query_master_key(p_master_key_file: &mut File) -> Option<String> {
     Some(user_input_key.to_string())
 }
 
-#[tokio::main]
-async fn main() {
+fn main() {
     let project_dirs = ProjectDirs::from("io", "earthtraveller1", "neng-pass");
     let data_dir = match project_dirs.as_ref() {
         Some(project_dirs) => project_dirs.data_dir(),
@@ -68,19 +73,6 @@ async fn main() {
         std::process::exit(1);
     }
 
-    let pool = SqlitePoolOptions::new()
-        .max_connections(15)
-        .connect(format!("sqlite://{}/passwords.db?mode=rwc", data_dir).as_str())
-        .await
-        .unwrap();
-
-    sqlx::query(
-        "CREATE TABLE IF NOT EXISTS passwords (Name varchar(65535), Password varchar(65535));",
-    )
-    .execute(&pool)
-    .await
-    .unwrap();
-
     eprintln!("[INFO]: Program data are stored in {}", data_dir);
 
     match cli_matches.subcommand() {
@@ -92,9 +84,18 @@ async fn main() {
             }
 
             let new_key = rpassword::prompt_password("Enter a new master key: ").unwrap();
-            let new_key_confirmation = rpassword::prompt_password("Confirm your master password: ").unwrap();
+            let new_key_confirmation =
+                rpassword::prompt_password("Confirm your master password: ").unwrap();
             if new_key != new_key_confirmation {
                 eprintln!("The passwords you entered do not match!");
+                std::process::exit(1);
+            }
+
+            if new_key.len() > MAX_MASTER_KEY_LEN {
+                eprintln!(
+                    "Your password is way too long! Limits to {} only.",
+                    MAX_MASTER_KEY_LEN
+                );
                 std::process::exit(1);
             }
 
@@ -112,6 +113,52 @@ async fn main() {
             }
 
             eprintln!("Successfully updated the master key file.");
+        }
+        Some(("new", sub_matches)) => {
+            let master_key_file = File::open(format!("{}/master_key", data_dir));
+            let mut master_key = match master_key_file {
+                Ok(mut master_key_file) => match query_master_key(&mut master_key_file) {
+                    Some(master_key) => master_key,
+                    None => std::process::exit(1),
+                },
+                Err(_) => {
+                    eprintln!("It appears that you didn't set a master key yet, or I can't access the file for some reasons.");
+                    std::process::exit(1);
+                }
+            };
+
+            while master_key.len() < MAX_MASTER_KEY_LEN {
+                master_key.push(' ');
+            }
+
+            let rng = ChaCha20Rng::from_entropy();
+            let password = rng
+                .sample_iter(&distributions::Alphanumeric)
+                .take(MAX_PASSWORD_LEN)
+                .collect::<Vec<u8>>();
+
+            let mut master_key_block = [b' '; MAX_MASTER_KEY_LEN];
+            master_key_block.copy_from_slice(master_key.as_bytes());
+            let master_key_block = GenericArray::from(master_key_block);
+            let name = sub_matches.get_one::<String>("NAME").unwrap();
+
+            let mut password_block = [0u8; MAX_PASSWORD_LEN];
+            password_block.copy_from_slice(&password);
+            let mut password_block = GenericArray::from(password_block);
+
+            let cipher = aes::Aes256::new(&master_key_block);
+            cipher.encrypt_block(&mut password_block);
+
+            // For debugging purposes
+            eprintln!(
+                "The generated password is {}",
+                String::from_utf8(password).unwrap()
+            );
+            eprintln!(
+                "The encrypted password is {:?}",
+                password_block.as_slice()
+            );
+            eprintln!("The name of the password is {}", name);
         }
         _ => {
             panic!("truly a bruh moment, this should be unreachable");
