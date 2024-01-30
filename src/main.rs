@@ -5,7 +5,7 @@ use std::{
 };
 
 use argon2::{Argon2, PasswordHash, PasswordVerifier};
-use clap::{arg, Command};
+use clap::Command;
 use directories::ProjectDirs;
 use neng_pass::crypto;
 use sqlx::sqlite::SqlitePoolOptions;
@@ -18,14 +18,11 @@ fn cli() -> Command {
         .subcommand(
             Command::new("set-master")
                 .about("Sets the master key")
-                .arg(arg!(<NEW_KEY> "the master key you want to set it to")),
         )
 }
 
-fn query_master_key(p_message: &str, p_master_key_file: &mut File) -> Option<String> {
-    eprint!("{}", p_message);
-
-    let user_input_key = rpassword::read_password().ok()?;
+fn query_master_key(p_master_key_file: &mut File) -> Option<String> {
+    let user_input_key = rpassword::prompt_password("Please enter the master password: ").ok()?;
     let mut actual_key_hashed = Vec::new();
     if p_master_key_file
         .read_to_end(&mut actual_key_hashed)
@@ -87,19 +84,24 @@ async fn main() {
     eprintln!("[INFO]: Program data are stored in {}", data_dir);
 
     match cli_matches.subcommand() {
-        Some(("set-master", sub_matches)) => {
+        Some(("set-master", _)) => {
             let master_key_file = File::open(format!("{}/master_key", data_dir));
-            if let Ok(mut master_key_file) = master_key_file {
-                if query_master_key("Enter the old master key: ", &mut master_key_file).is_none() {
-                    std::process::exit(1);
-                }
+            if master_key_file.is_ok() {
+                eprintln!("You have already set the master key! Resetting the master key will break the database! Don't do it!");
+                std::process::exit(1);
             }
 
-            let new_key = sub_matches.get_one::<String>("NEW_KEY").unwrap();
+            let new_key = rpassword::prompt_password("Enter a new master key: ").unwrap();
+            let new_key_confirmation = rpassword::prompt_password("Confirm your master password: ").unwrap();
+            if new_key != new_key_confirmation {
+                eprintln!("The passwords you entered do not match!");
+                std::process::exit(1);
+            }
+
             let master_key_file = File::create(format!("{}/master_key", data_dir));
 
             if let Ok(mut master_key_file) = master_key_file {
-                let hashed_new_key = crypto::hash(new_key).unwrap();
+                let hashed_new_key = crypto::hash(&new_key).unwrap();
                 if let Err(err) = master_key_file.write_all(hashed_new_key.as_slice()) {
                     eprintln!("[ERROR]: Failed to write to the master key file. {}", err);
                     std::process::exit(1);
