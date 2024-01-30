@@ -24,13 +24,8 @@ fn cli() -> Command {
 fn query_master_key(p_message: &str, p_master_key_file: &mut File) -> Option<String> {
     eprint!("{}", p_message);
 
-    let mut user_input_key = String::new();
-    std::io::stdin()
-        .read_line(&mut user_input_key)
-        .expect("Failed to read the input string.");
-    let user_input_key = user_input_key.trim();
-
-    let user_input_key_hashed = crypto::hash(user_input_key);
+    let user_input_key = rpassword::read_password().ok()?;
+    let user_input_key_hashed = crypto::hash(&user_input_key);
     let mut actual_key_hashed = Vec::new();
     if p_master_key_file
         .read_to_end(&mut actual_key_hashed)
