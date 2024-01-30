@@ -744,6 +744,7 @@ dependencies = [
  "aes",
  "clap",
  "directories",
+ "rand",
  "sha2",
  "sqlx",
  "tokio",
