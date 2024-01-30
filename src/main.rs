@@ -153,6 +153,15 @@ fn main() {
                 }
             };
 
+            let mut sql_statement = sql_connection.prepare("SELECT name FROM passwords WHERE name = ?").unwrap();
+            let name = sub_matches.get_one::<String>("NAME").unwrap();
+            sql_statement.bind((1, name.as_str())).unwrap();
+
+            if sql_statement.iter().count() > 0 {
+                eprintln!("A password with that name already exists, you bozo.");
+                std::process::exit(1);
+            }
+
             while master_key.len() < MAX_MASTER_KEY_LEN {
                 master_key.push(' ');
             }
@@ -166,7 +175,6 @@ fn main() {
             let mut master_key_block = [b' '; MAX_MASTER_KEY_LEN];
             master_key_block.copy_from_slice(master_key.as_bytes());
             let master_key_block = GenericArray::from(master_key_block);
-            let name = sub_matches.get_one::<String>("NAME").unwrap();
 
             let mut password_block = [0u8; MAX_PASSWORD_LEN];
             password_block.copy_from_slice(&password);
