@@ -7,6 +7,7 @@ use std::{
 use clap::{arg, Command};
 use directories::ProjectDirs;
 use neng_pass::crypto;
+use sqlx::sqlite::SqlitePoolOptions;
 
 fn cli() -> Command {
     Command::new("neng-pass")
@@ -49,7 +50,8 @@ fn query_master_key(p_message: &str, p_master_key_file: &mut File) -> Option<Str
     Some(user_input_key.to_string())
 }
 
-fn main() {
+#[tokio::main]
+async fn main() {
     let project_dirs = ProjectDirs::from("io", "earthtraveller1", "neng-pass");
     let data_dir = match project_dirs.as_ref() {
         Some(project_dirs) => project_dirs.data_dir(),
@@ -64,6 +66,12 @@ fn main() {
         eprintln!("[ERROR]: Failed to create the data directory. {}", err);
         std::process::exit(1);
     }
+
+    let pool = SqlitePoolOptions::new()
+        .max_connections(15)
+        .connect(format!("sqlite://{}/passwords.db", data_dir).as_str())
+        .await
+        .unwrap();
 
     eprintln!("[INFO]: Program data are stored in {}", data_dir);
 
