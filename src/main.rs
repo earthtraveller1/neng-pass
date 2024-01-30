@@ -38,6 +38,10 @@ fn cli() -> Command {
                         .help("Output as a raw output, to be piped into other commands."),
                 ),
         )
+        .subcommand(
+            Command::new("list")
+                .about("Gets a list of all the passwords that you have saved right now."),
+        )
 }
 
 fn query_master_key(p_master_key_file: &mut File) -> Option<String> {
@@ -233,6 +237,29 @@ fn main() {
                     String::from_utf8(password_block.as_slice().to_vec()).unwrap()
                 );
             }
+        },
+        Some(("list", _)) => {
+            let master_key_file = File::open(format!("{}/master_key", data_dir));
+            match master_key_file {
+                Ok(mut master_key_file) => match query_master_key(&mut master_key_file) {
+                    Some(master_key) => master_key,
+                    None => std::process::exit(1),
+                },
+                Err(_) => {
+                    eprintln!("It appears that you didn't set a master key yet, or I can't access the file for some reasons.");
+                    std::process::exit(1);
+                }
+            };
+
+            let sql_query = "SELECT name FROM passwords;";
+            let mut sql_statement = sql_connection.prepare(sql_query).unwrap();
+
+            eprintln!("Here is the list of passwords that you have stored.\n");
+
+            sql_statement.iter().map(|row| row.unwrap()).for_each(|row| {
+                let name: &str = row.read(0);
+                eprintln!("\t - {}", name);
+            });
         }
         _ => {
             panic!("truly a bruh moment, this should be unreachable");
