@@ -4,9 +4,9 @@ use std::{
     path::Path,
 };
 
-use aes::cipher::{generic_array::GenericArray, BlockEncrypt, KeyInit};
+use aes::cipher::{generic_array::GenericArray, BlockDecrypt, BlockEncrypt, KeyInit};
 use argon2::{Argon2, PasswordHash, PasswordVerifier};
-use clap::{arg, Command};
+use clap::{arg, Arg, ArgAction, Command};
 use directories::ProjectDirs;
 use neng_pass::crypto;
 use rand::{distributions, Rng, SeedableRng};
@@ -25,6 +25,18 @@ fn cli() -> Command {
             Command::new("new")
                 .about("Creates a new password with the specified name.")
                 .arg(arg!(<NAME> "The you want to assign to the password.")),
+        )
+        .subcommand(
+            Command::new("get")
+                .about("Gets the value of a specific password.")
+                .arg(arg!(<NAME> "The name of the password that you want to get."))
+                .arg(
+                    Arg::new("raw")
+                        .short('r')
+                        .long("raw")
+                        .action(ArgAction::SetTrue)
+                        .help("Output as a raw output, to be piped into other commands."),
+                ),
         )
 }
 
@@ -76,7 +88,9 @@ fn main() {
     eprintln!("[INFO]: Program data are stored in {}", data_dir);
 
     let sql_connection = sqlite::open(format!("{}/passwords.db", data_dir)).unwrap();
-    sql_connection.execute("CREATE TABLE IF NOT EXISTS passwords (name TEXT, password BLOB);").unwrap();
+    sql_connection
+        .execute("CREATE TABLE IF NOT EXISTS passwords (name TEXT, password BLOB);")
+        .unwrap();
 
     match cli_matches.subcommand() {
         Some(("set-master", _)) => {
@@ -158,9 +172,67 @@ fn main() {
             sql_statement.bind((2, password_block.as_slice())).unwrap();
 
             // This is how you run SQLite statements, apparently.
-            sql_statement.iter().for_each(|_|{});
+            sql_statement.iter().for_each(|_| {});
 
             eprintln!("Created and saved password named '{}'", name);
+        }
+        Some(("get", sub_matches)) => {
+            let master_key_file = File::open(format!("{}/master_key", data_dir));
+            let mut master_key = match master_key_file {
+                Ok(mut master_key_file) => match query_master_key(&mut master_key_file) {
+                    Some(master_key) => master_key,
+                    None => std::process::exit(1),
+                },
+                Err(_) => {
+                    eprintln!("It appears that you didn't set a master key yet, or I can't access the file for some reasons.");
+                    std::process::exit(1);
+                }
+            };
+
+            while master_key.len() < MAX_MASTER_KEY_LEN {
+                master_key.push(' ');
+            }
+
+            let mut master_key_block = [b' '; MAX_MASTER_KEY_LEN];
+            master_key_block.copy_from_slice(master_key.as_bytes());
+            let master_key_block = GenericArray::from(master_key_block);
+            let name = sub_matches.get_one::<String>("NAME").unwrap();
+
+            let sql_query = "SELECT * FROM passwords WHERE name = ?;";
+            let mut sql_statement = sql_connection.prepare(sql_query).unwrap();
+            sql_statement.bind((1, name.as_str())).unwrap();
+
+            let first_row = match match sql_statement.iter().next() {
+                Some(row) => row,
+                None => {
+                    eprintln!("That password doesn't exist, idiot.");
+                    std::process::exit(1);
+                }
+            } {
+                Ok(row) => row,
+                Err(err) => {
+                    eprintln!("Can't get that password. Error {}", err);
+                    std::process::exit(1);
+                }
+            };
+
+            let password_blob: &[u8] = first_row.read(1);
+            let mut password_block = [0u8; MAX_PASSWORD_LEN];
+            password_block.copy_from_slice(password_blob);
+            let mut password_block = GenericArray::from(password_block);
+
+            let cipher = aes::Aes256::new(&master_key_block);
+            cipher.decrypt_block(&mut password_block);
+
+            let raw_mode = sub_matches.get_flag("raw");
+            if raw_mode {
+                std::io::stdout().write(password_block.as_slice()).unwrap();
+            } else {
+                eprintln!(
+                    "Here's the password: {}",
+                    String::from_utf8(password_block.as_slice().to_vec()).unwrap()
+                );
+            }
         }
         _ => {
             panic!("truly a bruh moment, this should be unreachable");
