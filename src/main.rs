@@ -6,7 +6,7 @@ use std::{
 
 use clap::{arg, Command};
 use directories::ProjectDirs;
-use sha2::{Sha512, Digest};
+use neng_pass::crypto;
 
 fn cli() -> Command {
     Command::new("neng-pass")
@@ -29,7 +29,7 @@ fn query_master_key(p_message: &str, p_master_key_file: &mut File) -> Option<Str
         .expect("Failed to read the input string.");
     let user_input_key = user_input_key.trim();
 
-    let user_input_key_hashed = Sha512::digest(user_input_key);
+    let user_input_key_hashed = crypto::hash(user_input_key);
     let mut actual_key_hashed = Vec::new();
     if p_master_key_file
         .read_to_end(&mut actual_key_hashed)
@@ -80,7 +80,7 @@ fn main() {
             let master_key_file = File::create(format!("{}/master_key", data_dir));
 
             if let Ok(mut master_key_file) = master_key_file {
-                let hashed_new_key = Sha512::digest(new_key);
+                let hashed_new_key = crypto::hash(new_key);
                 if let Err(err) = master_key_file.write_all(hashed_new_key.as_slice()) {
                     eprintln!("[ERROR]: Failed to write to the master key file. {}", err);
                     std::process::exit(1);
