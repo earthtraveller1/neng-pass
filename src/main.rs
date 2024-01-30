@@ -4,6 +4,7 @@ use std::{
     path::Path,
 };
 
+use argon2::{Argon2, PasswordHash, PasswordVerifier};
 use clap::{arg, Command};
 use directories::ProjectDirs;
 use neng_pass::crypto;
@@ -25,7 +26,6 @@ fn query_master_key(p_message: &str, p_master_key_file: &mut File) -> Option<Str
     eprint!("{}", p_message);
 
     let user_input_key = rpassword::read_password().ok()?;
-    let user_input_key_hashed = crypto::hash(&user_input_key);
     let mut actual_key_hashed = Vec::new();
     if p_master_key_file
         .read_to_end(&mut actual_key_hashed)
@@ -37,7 +37,16 @@ fn query_master_key(p_message: &str, p_master_key_file: &mut File) -> Option<Str
         return None;
     }
 
-    if user_input_key_hashed.as_slice() != actual_key_hashed.as_slice() {
+    let actual_key_hashed = String::from_utf8(actual_key_hashed).ok()?;
+
+    let argon2 = Argon2::default();
+    let actual_key_hashed =
+        PasswordHash::new(&actual_key_hashed).unwrap();
+
+    if argon2
+        .verify_password(user_input_key.as_bytes(), &actual_key_hashed)
+        .is_err()
+    {
         eprintln!("[ERROR]: That is the wrong master key.");
         return None;
     }
@@ -68,10 +77,12 @@ async fn main() {
         .await
         .unwrap();
 
-    sqlx::query("CREATE TABLE IF NOT EXISTS passwords (Name varchar(65535), Password varchar(65535));")
-        .execute(&pool)
-        .await
-        .unwrap();
+    sqlx::query(
+        "CREATE TABLE IF NOT EXISTS passwords (Name varchar(65535), Password varchar(65535));",
+    )
+    .execute(&pool)
+    .await
+    .unwrap();
 
     eprintln!("[INFO]: Program data are stored in {}", data_dir);
 
@@ -88,7 +99,7 @@ async fn main() {
             let master_key_file = File::create(format!("{}/master_key", data_dir));
 
             if let Ok(mut master_key_file) = master_key_file {
-                let hashed_new_key = crypto::hash(new_key);
+                let hashed_new_key = crypto::hash(new_key).unwrap();
                 if let Err(err) = master_key_file.write_all(hashed_new_key.as_slice()) {
                     eprintln!("[ERROR]: Failed to write to the master key file. {}", err);
                     std::process::exit(1);
