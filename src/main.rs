@@ -156,7 +156,7 @@ fn main() {
             );
             eprintln!(
                 "The encrypted password is {:?}",
-                password_block.as_slice()
+                hex::encode(password_block.as_slice())
             );
             eprintln!("The name of the password is {}", name);
         }
