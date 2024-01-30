@@ -69,7 +69,12 @@ async fn main() {
 
     let pool = SqlitePoolOptions::new()
         .max_connections(15)
-        .connect(format!("sqlite://{}/passwords.db", data_dir).as_str())
+        .connect(format!("sqlite://{}/passwords.db?mode=rwc", data_dir).as_str())
+        .await
+        .unwrap();
+
+    sqlx::query("CREATE TABLE IF NOT EXISTS passwords (Name varchar(65535), Password varchar(65535));")
+        .execute(&pool)
         .await
         .unwrap();
 
