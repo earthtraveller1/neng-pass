@@ -1,10 +1,8 @@
 use std::{io::Write, path::Path};
 
-use aes::cipher::{generic_array::GenericArray, BlockDecrypt, BlockEncrypt, KeyInit};
+use aes::cipher::{generic_array::GenericArray, BlockDecrypt, KeyInit};
 use clap::{arg, Arg, ArgAction, Command};
 use directories::ProjectDirs;
-use rand::{distributions, Rng, SeedableRng};
-use rand_chacha::ChaCha20Rng;
 
 use neng_pass::{MAX_MASTER_KEY_LEN, MAX_PASSWORD_LEN};
 
@@ -98,46 +96,12 @@ fn main() {
             eprintln!("Successfully updated the master key file.");
         }
         Some(("new", sub_matches)) => {
-            let mut master_key = ask_for_password(&master_key_path);
-            let mut sql_statement = sql_connection
-                .prepare("SELECT name FROM passwords WHERE name = ?")
-                .unwrap();
+            let master_key = ask_for_password(&master_key_path);
             let name = sub_matches.get_one::<String>("NAME").unwrap();
-            sql_statement.bind((1, name.as_str())).unwrap();
-
-            if sql_statement.iter().count() > 0 {
-                eprintln!("A password with that name already exists, you bozo.");
+            if let Err(err) = neng_pass::create_password(&master_key, &name, &sql_connection) {
+                eprintln!("[ERROR]: {}", err.get_message());
                 std::process::exit(1);
             }
-
-            while master_key.len() < MAX_MASTER_KEY_LEN {
-                master_key.push(' ');
-            }
-
-            let rng = ChaCha20Rng::from_entropy();
-            let password = rng
-                .sample_iter(&distributions::Alphanumeric)
-                .take(MAX_PASSWORD_LEN)
-                .collect::<Vec<u8>>();
-
-            let mut master_key_block = [b' '; MAX_MASTER_KEY_LEN];
-            master_key_block.copy_from_slice(master_key.as_bytes());
-            let master_key_block = GenericArray::from(master_key_block);
-
-            let mut password_block = [0u8; MAX_PASSWORD_LEN];
-            password_block.copy_from_slice(&password);
-            let mut password_block = GenericArray::from(password_block);
-
-            let cipher = aes::Aes256::new(&master_key_block);
-            cipher.encrypt_block(&mut password_block);
-
-            let sql_statement = "INSERT INTO passwords VALUES (?, ?)";
-            let mut sql_statement = sql_connection.prepare(sql_statement).unwrap();
-            sql_statement.bind((1, name.as_str())).unwrap();
-            sql_statement.bind((2, password_block.as_slice())).unwrap();
-
-            // This is how you run SQLite statements, apparently.
-            sql_statement.iter().for_each(|_| {});
 
             eprintln!("Created and saved password named '{}'", name);
         }
