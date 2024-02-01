@@ -6,9 +6,7 @@ use directories::ProjectDirs;
 use rand::{distributions, Rng, SeedableRng};
 use rand_chacha::ChaCha20Rng;
 
-use neng_pass::MAX_MASTER_KEY_LEN;
-
-const MAX_PASSWORD_LEN: usize = 16;
+use neng_pass::{MAX_MASTER_KEY_LEN, MAX_PASSWORD_LEN};
 
 fn cli() -> Command {
     Command::new("neng-pass")
