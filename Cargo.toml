@@ -2,5 +2,6 @@
 resolver = "2"
 
 members = [
-    "neng-pass"
+    "neng-pass",
+    "neng-pass-gui/src-tauri"
 ]
