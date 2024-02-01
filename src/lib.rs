@@ -174,7 +174,11 @@ pub fn create_password(
     Ok(()) // Placeholder
 }
 
-pub fn get_password(mut p_master_key: String, p_name: &str, p_sql_connection: &sqlite::Connection) -> Result<String, Error> {
+pub fn get_password(
+    mut p_master_key: String,
+    p_name: &str,
+    p_sql_connection: &sqlite::Connection,
+) -> Result<String, Error> {
     while p_master_key.len() < MAX_MASTER_KEY_LEN {
         p_master_key.push(' ');
     }

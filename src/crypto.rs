@@ -1,9 +1,9 @@
-use aes::cipher::{generic_array::GenericArray, KeyInit, BlockEncrypt, BlockDecrypt};
+use aes::cipher::{generic_array::GenericArray, BlockDecrypt, BlockEncrypt, KeyInit};
 use argon2::{password_hash::SaltString, Argon2, PasswordHasher};
 use rand::SeedableRng;
 use rand_chacha::ChaCha20Rng;
 
-use crate::{MAX_PASSWORD_LEN, MAX_MASTER_KEY_LEN};
+use crate::{MAX_MASTER_KEY_LEN, MAX_PASSWORD_LEN};
 
 pub fn hash(p_input: &str) -> argon2::password_hash::Result<Vec<u8>> {
     let mut cha_cha_rng = ChaCha20Rng::from_entropy();

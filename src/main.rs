@@ -105,19 +105,22 @@ fn main() {
         Some(("get", sub_matches)) => {
             let master_key = ask_for_password(&master_key_path);
             let name = sub_matches.get_one::<String>("NAME").unwrap();
-            let decrypted_password = match neng_pass::get_password(master_key, &name, &sql_connection) {
-                Ok(password) => password,
-                Err(err) => {
-                    eprintln!("[ERROR]: {}", err.get_message());
-                    std::process::exit(1);
-                }
-            };
+            let decrypted_password =
+                match neng_pass::get_password(master_key, &name, &sql_connection) {
+                    Ok(password) => password,
+                    Err(err) => {
+                        eprintln!("[ERROR]: {}", err.get_message());
+                        std::process::exit(1);
+                    }
+                };
 
             let raw_mode = sub_matches.get_flag("raw");
             if raw_mode {
-                std::io::stdout().write(decrypted_password.as_bytes()).unwrap();
+                std::io::stdout()
+                    .write(decrypted_password.as_bytes())
+                    .unwrap();
             } else {
-                eprintln!( "Here's the password: {}", decrypted_password);
+                eprintln!("Here's the password: {}", decrypted_password);
             }
         }
         Some(("list", _)) => {
@@ -140,7 +143,7 @@ fn main() {
             ask_for_password(&master_key_path);
             let name: &String = sub_matches.get_one("NAME").unwrap();
 
-            if let Err(err) =  neng_pass::delete_password(name.as_str(), &sql_connection) {
+            if let Err(err) = neng_pass::delete_password(name.as_str(), &sql_connection) {
                 eprintln!("[ERROR]: {}", err.get_message());
                 std::process::exit(1);
             }
