@@ -95,7 +95,7 @@ fn main() {
         Some(("new", sub_matches)) => {
             let master_key = ask_for_password(&master_key_path);
             let name = sub_matches.get_one::<String>("NAME").unwrap();
-            if let Err(err) = neng_pass::create_password(&master_key, &name, &sql_connection) {
+            if let Err(err) = neng_pass::create_password(master_key, &name, &sql_connection) {
                 eprintln!("[ERROR]: {}", err.get_message());
                 std::process::exit(1);
             }
@@ -105,7 +105,7 @@ fn main() {
         Some(("get", sub_matches)) => {
             let master_key = ask_for_password(&master_key_path);
             let name = sub_matches.get_one::<String>("NAME").unwrap();
-            let decrypted_password = match neng_pass::get_password(&master_key, &name, &sql_connection) {
+            let decrypted_password = match neng_pass::get_password(master_key, &name, &sql_connection) {
                 Ok(password) => password,
                 Err(err) => {
                     eprintln!("[ERROR]: {}", err.get_message());

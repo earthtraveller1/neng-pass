@@ -131,7 +131,7 @@ pub fn query_master_key(
 }
 
 pub fn create_password(
-    p_master_key: &str,
+    mut p_master_key: String,
     p_name: &str,
     p_sql_connection: &sqlite::Connection,
 ) -> Result<(), Error> {
@@ -155,17 +155,12 @@ pub fn create_password(
     };
 
     // Pad the master key
-    let master_key = {
-        let mut master_key = p_master_key.to_owned();
 
-        while master_key.len() < MAX_MASTER_KEY_LEN {
-            master_key.push(' ');
-        }
+    while p_master_key.len() < MAX_MASTER_KEY_LEN {
+        p_master_key.push(' ');
+    }
 
-        master_key
-    };
-
-    let encrypted_password = crypto::encrypt(master_key.as_bytes(), &generated_password);
+    let encrypted_password = crypto::encrypt(p_master_key.as_bytes(), &generated_password);
 
     let sql_query = "INSERT INTO passwords VALUES (?, ?)";
 
@@ -179,16 +174,10 @@ pub fn create_password(
     Ok(()) // Placeholder
 }
 
-pub fn get_password(p_master_key: &str, p_name: &str, p_sql_connection: &sqlite::Connection) -> Result<String, Error> {
-    let master_key = {
-        let mut master_key = p_master_key.to_owned();
-
-        while master_key.len() < MAX_MASTER_KEY_LEN {
-            master_key.push(' ');
-        }
-
-        master_key
-    };
+pub fn get_password(mut p_master_key: String, p_name: &str, p_sql_connection: &sqlite::Connection) -> Result<String, Error> {
+    while p_master_key.len() < MAX_MASTER_KEY_LEN {
+        p_master_key.push(' ');
+    }
 
     let sql_query = "SELECT * FROM passwords WHERE name = ?;";
     let mut sql_statement = p_sql_connection.prepare(sql_query)?;
@@ -200,7 +189,7 @@ pub fn get_password(p_master_key: &str, p_name: &str, p_sql_connection: &sqlite:
     }?;
 
     let password = row.read(1);
-    let decrypted_password = crypto::decrypt(master_key.as_bytes(), password);
+    let decrypted_password = crypto::decrypt(p_master_key.as_bytes(), password);
 
     Ok(String::from_utf8_lossy(&decrypted_password).to_string())
 }
