@@ -9,8 +9,8 @@ pub mod crypto;
 use argon2::{password_hash::Error as Argon2Error, Argon2, PasswordHash, PasswordVerifier};
 use rand::{Rng, SeedableRng};
 use rand_chacha::ChaCha20Rng;
-use std::io::Error as IOError;
 use sqlite::Error as SqliteError;
+use std::io::Error as IOError;
 
 pub const MAX_MASTER_KEY_LEN: usize = 32;
 pub const MAX_PASSWORD_LEN: usize = 16;
@@ -22,6 +22,7 @@ pub enum Error {
     FromUtf8Error(FromUtf8Error),
     MasterKeyTooLong,
     MasterKeyAlreadyExists,
+    PasswordAlreadyExists,
 }
 
 impl Error {
@@ -34,7 +35,7 @@ impl Error {
                 _ => {
                     format!("Failed to hash the password: {}", err)
                 }
-            }
+            },
             Error::DatabaseError(err) => {
                 format!("SQL error: {}", err)
             }
@@ -49,6 +50,9 @@ impl Error {
             }
             Error::MasterKeyAlreadyExists => {
                 format!("The master key has already been set. Don't try to set it again, as it will break stuff.")
+            }
+            Error::PasswordAlreadyExists => {
+                format!("A password with that name already exists!")
             }
         }
     }
@@ -112,7 +116,19 @@ pub fn query_master_key(
     Ok(p_inputted_password.to_string())
 }
 
-pub fn create_password(p_master_key: &str, p_name: &str, p_sql_connection: &sqlite::Connection) -> Result<String, Error> {
+pub fn create_password(
+    p_master_key: &str,
+    p_name: &str,
+    p_sql_connection: &sqlite::Connection,
+) -> Result<String, Error> {
+    let mut sql_statement =
+        p_sql_connection.prepare("SELECT name FROM passwords WHERE name = ?")?;
+    sql_statement.bind((1, p_name)).unwrap();
+
+    if sql_statement.iter().count() > 0 {
+        return Err(Error::PasswordAlreadyExists);
+    }
+
     let generated_password = {
         let mut random_generator = ChaCha20Rng::from_entropy();
         let mut password = [0u8; MAX_PASSWORD_LEN];
@@ -136,7 +152,7 @@ pub fn create_password(p_master_key: &str, p_name: &str, p_sql_connection: &sqli
     };
 
     let encrypted_password = crypto::encrypt(master_key.as_bytes(), &generated_password);
-    
+
     let sql_query = "INSERT INTO passwords VALUES (?, ?)";
 
     let mut sql_statement = p_sql_connection.prepare(sql_query)?;
