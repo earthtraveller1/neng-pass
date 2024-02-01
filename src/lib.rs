@@ -24,6 +24,7 @@ pub enum Error {
     MasterKeyTooLong,
     MasterKeyAlreadyExists,
     PasswordAlreadyExists,
+    PasswordDoesntExist(Box<str>),
 }
 
 impl Error {
@@ -57,6 +58,9 @@ impl Error {
             }
             Error::PasswordAlreadyExists => {
                 format!("A password with that name already exists!")
+            },
+            Error::PasswordDoesntExist(name) => {
+                format!("There appears to be no password saved that is named {}", name)
             }
         }
     }
@@ -173,4 +177,30 @@ pub fn create_password(
     sql_statement.iter().for_each(|_| {});
 
     Ok(()) // Placeholder
+}
+
+pub fn get_password(p_master_key: &str, p_name: &str, p_sql_connection: &sqlite::Connection) -> Result<String, Error> {
+    let master_key = {
+        let mut master_key = p_master_key.to_owned();
+
+        while master_key.len() < MAX_MASTER_KEY_LEN {
+            master_key.push(' ');
+        }
+
+        master_key
+    };
+
+    let sql_query = "SELECT * FROM passwords WHERE name = ?;";
+    let mut sql_statement = p_sql_connection.prepare(sql_query)?;
+    sql_statement.bind((1, p_name))?;
+
+    let row = match sql_statement.iter().next() {
+        Some(row) => row,
+        None => return Err(Error::PasswordDoesntExist(Box::from(p_name))),
+    }?;
+
+    let password = row.read(1);
+    let decrypted_password = crypto::decrypt(master_key.as_bytes(), password);
+
+    Ok(String::from_utf8_lossy(&decrypted_password).to_string())
 }
