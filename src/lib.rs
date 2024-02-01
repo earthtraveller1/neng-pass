@@ -120,7 +120,7 @@ pub fn create_password(
     p_master_key: &str,
     p_name: &str,
     p_sql_connection: &sqlite::Connection,
-) -> Result<String, Error> {
+) -> Result<(), Error> {
     let mut sql_statement =
         p_sql_connection.prepare("SELECT name FROM passwords WHERE name = ?")?;
     sql_statement.bind((1, p_name)).unwrap();
@@ -162,5 +162,5 @@ pub fn create_password(
     // This is how you run SQLite statements, apparently.
     sql_statement.iter().for_each(|_| {});
 
-    Ok(String::new()) // Placeholder
+    Ok(()) // Placeholder
 }
