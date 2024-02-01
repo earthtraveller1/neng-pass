@@ -138,14 +138,12 @@ fn main() {
         }
         Some(("delete", sub_matches)) => {
             ask_for_password(&master_key_path);
-
             let name: &String = sub_matches.get_one("NAME").unwrap();
 
-            let sql_query = "DELETE FROM passwords WHERE name = ?";
-            let mut sql_statement = sql_connection.prepare(sql_query).unwrap();
-            sql_statement.bind((1, name.as_str())).unwrap();
-
-            sql_statement.iter().for_each(|_| {});
+            if let Err(err) =  neng_pass::delete_password(name.as_str(), &sql_connection) {
+                eprintln!("[ERROR]: {}", err.get_message());
+                std::process::exit(1);
+            }
 
             eprintln!("I have deleted all the passwords named '{}'", name);
         }

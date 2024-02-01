@@ -193,3 +193,11 @@ pub fn get_password(mut p_master_key: String, p_name: &str, p_sql_connection: &s
 
     Ok(String::from_utf8_lossy(&decrypted_password).to_string())
 }
+
+pub fn delete_password(p_name: &str, p_sql_connection: &sqlite::Connection) -> Result<(), Error> {
+    let mut sql_statement = p_sql_connection.prepare("DELETE FROM passwords WHERE name = ?;")?;
+    sql_statement.bind((1, p_name))?;
+
+    sql_statement.iter().for_each(|_| {});
+    Ok(())
+}
