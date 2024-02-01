@@ -1,14 +1,8 @@
-use std::{
-    fs::File,
-    io::{Read, Write},
-    path::Path,
-};
+use std::{io::Write, path::Path};
 
 use aes::cipher::{generic_array::GenericArray, BlockDecrypt, BlockEncrypt, KeyInit};
-use argon2::{Argon2, PasswordHash, PasswordVerifier};
 use clap::{arg, Arg, ArgAction, Command};
 use directories::ProjectDirs;
-use neng_pass::crypto;
 use rand::{distributions, Rng, SeedableRng};
 use rand_chacha::ChaCha20Rng;
 
@@ -50,33 +44,8 @@ fn cli() -> Command {
             )
 }
 
-fn query_master_key(p_master_key_file: &mut File) -> Option<String> {
-    let user_input_key = rpassword::prompt_password("Please enter the master password: ").ok()?;
-    let mut actual_key_hashed = Vec::new();
-    if p_master_key_file
-        .read_to_end(&mut actual_key_hashed)
-        .is_err()
-    {
-        eprintln!(
-            "[ERROR]: Failed to read the master key. Maybe you don't have permission to read it?"
-        );
-        return None;
-    }
-
-    let actual_key_hashed = String::from_utf8(actual_key_hashed).ok()?;
-
-    let argon2 = Argon2::default();
-    let actual_key_hashed = PasswordHash::new(&actual_key_hashed).unwrap();
-
-    if argon2
-        .verify_password(user_input_key.as_bytes(), &actual_key_hashed)
-        .is_err()
-    {
-        eprintln!("[ERROR]: That is the wrong master key.");
-        return None;
-    }
-
-    Some(user_input_key.to_string())
+fn ask_for_password() -> String {
+    rpassword::prompt_password("Enter the master key: ").unwrap()
 }
 
 fn main() {
@@ -102,6 +71,8 @@ fn main() {
         .execute("CREATE TABLE IF NOT EXISTS passwords (name TEXT, password BLOB);")
         .unwrap();
 
+    let master_key_path = format!("{}/master_key", data_dir);
+
     match cli_matches.subcommand() {
         Some(("set-master", _)) => {
             let new_key = rpassword::prompt_password("Enter a new master key: ").unwrap();
@@ -112,7 +83,9 @@ fn main() {
                 std::process::exit(1);
             }
 
-            if let Err(err) = neng_pass::set_master_key(format!("{}/master_key", data_dir).as_str(), &new_key) {
+            if let Err(err) =
+                neng_pass::set_master_key(format!("{}/master_key", data_dir).as_str(), &new_key)
+            {
                 eprintln!("[ERROR]: {}", err.get_message());
                 std::process::exit(1);
             }
@@ -120,14 +93,10 @@ fn main() {
             eprintln!("Successfully updated the master key file.");
         }
         Some(("new", sub_matches)) => {
-            let master_key_file = File::open(format!("{}/master_key", data_dir));
-            let mut master_key = match master_key_file {
-                Ok(mut master_key_file) => match query_master_key(&mut master_key_file) {
-                    Some(master_key) => master_key,
-                    None => std::process::exit(1),
-                },
-                Err(_) => {
-                    eprintln!("It appears that you didn't set a master key yet, or I can't access the file for some reasons.");
+            let mut master_key = match neng_pass::query_master_key(&master_key_path, &ask_for_password()) {
+                Ok(key) => key,
+                Err(err) => {
+                    eprintln!("[ERROR]: {}", err.get_message());
                     std::process::exit(1);
                 }
             };
@@ -175,14 +144,10 @@ fn main() {
             eprintln!("Created and saved password named '{}'", name);
         }
         Some(("get", sub_matches)) => {
-            let master_key_file = File::open(format!("{}/master_key", data_dir));
-            let mut master_key = match master_key_file {
-                Ok(mut master_key_file) => match query_master_key(&mut master_key_file) {
-                    Some(master_key) => master_key,
-                    None => std::process::exit(1),
-                },
-                Err(_) => {
-                    eprintln!("It appears that you didn't set a master key yet, or I can't access the file for some reasons.");
+            let mut master_key = match neng_pass::query_master_key(&master_key_path, &ask_for_password()) {
+                Ok(key) => key,
+                Err(err) => {
+                    eprintln!("[ERROR]: {}", err.get_message());
                     std::process::exit(1);
                 }
             };
@@ -233,14 +198,10 @@ fn main() {
             }
         }
         Some(("list", _)) => {
-            let master_key_file = File::open(format!("{}/master_key", data_dir));
-            match master_key_file {
-                Ok(mut master_key_file) => match query_master_key(&mut master_key_file) {
-                    Some(master_key) => master_key,
-                    None => std::process::exit(1),
-                },
-                Err(_) => {
-                    eprintln!("It appears that you didn't set a master key yet, or I can't access the file for some reasons.");
+            match neng_pass::query_master_key(&master_key_path, &ask_for_password()) {
+                Ok(key) => key,
+                Err(err) => {
+                    eprintln!("[ERROR]: {}", err.get_message());
                     std::process::exit(1);
                 }
             };
@@ -259,14 +220,10 @@ fn main() {
                 });
         }
         Some(("delete", sub_matches)) => {
-            let master_key_file = File::open(format!("{}/master_key", data_dir));
-            match master_key_file {
-                Ok(mut master_key_file) => match query_master_key(&mut master_key_file) {
-                    Some(master_key) => master_key,
-                    None => std::process::exit(1),
-                },
-                Err(_) => {
-                    eprintln!("It appears that you didn't set a master key yet, or I can't access the file for some reasons.");
+            match neng_pass::query_master_key(&master_key_path, &ask_for_password()) {
+                Ok(key) => key,
+                Err(err) => {
+                    eprintln!("[ERROR]: {}", err.get_message());
                     std::process::exit(1);
                 }
             };
