@@ -12,7 +12,8 @@ use neng_pass::crypto;
 use rand::{distributions, Rng, SeedableRng};
 use rand_chacha::ChaCha20Rng;
 
-const MAX_MASTER_KEY_LEN: usize = 32;
+use neng_pass::MAX_MASTER_KEY_LEN;
+
 const MAX_PASSWORD_LEN: usize = 16;
 
 fn cli() -> Command {
@@ -103,12 +104,6 @@ fn main() {
 
     match cli_matches.subcommand() {
         Some(("set-master", _)) => {
-            let master_key_file = File::open(format!("{}/master_key", data_dir));
-            if master_key_file.is_ok() {
-                eprintln!("You have already set the master key! Resetting the master key will break the database! Don't do it!");
-                std::process::exit(1);
-            }
-
             let new_key = rpassword::prompt_password("Enter a new master key: ").unwrap();
             let new_key_confirmation =
                 rpassword::prompt_password("Confirm your master password: ").unwrap();
@@ -117,24 +112,8 @@ fn main() {
                 std::process::exit(1);
             }
 
-            if new_key.len() > MAX_MASTER_KEY_LEN {
-                eprintln!(
-                    "Your password is way too long! Limits to {} only.",
-                    MAX_MASTER_KEY_LEN
-                );
-                std::process::exit(1);
-            }
-
-            let master_key_file = File::create(format!("{}/master_key", data_dir));
-
-            if let Ok(mut master_key_file) = master_key_file {
-                let hashed_new_key = crypto::hash(&new_key).unwrap();
-                if let Err(err) = master_key_file.write_all(hashed_new_key.as_slice()) {
-                    eprintln!("[ERROR]: Failed to write to the master key file. {}", err);
-                    std::process::exit(1);
-                }
-            } else {
-                eprintln!("[ERROR]: Failed to open or create the master key file.");
+            if let Err(err) = neng_pass::set_master_key(format!("{}/master_key", data_dir).as_str(), &new_key) {
+                eprintln!("[ERROR]: {}", err.get_message());
                 std::process::exit(1);
             }
 
@@ -153,7 +132,9 @@ fn main() {
                 }
             };
 
-            let mut sql_statement = sql_connection.prepare("SELECT name FROM passwords WHERE name = ?").unwrap();
+            let mut sql_statement = sql_connection
+                .prepare("SELECT name FROM passwords WHERE name = ?")
+                .unwrap();
             let name = sub_matches.get_one::<String>("NAME").unwrap();
             sql_statement.bind((1, name.as_str())).unwrap();
 
@@ -276,7 +257,7 @@ fn main() {
                     let name: &str = row.read(0);
                     eprintln!("\t - {}", name);
                 });
-        },
+        }
         Some(("delete", sub_matches)) => {
             let master_key_file = File::open(format!("{}/master_key", data_dir));
             match master_key_file {
