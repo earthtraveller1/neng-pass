@@ -44,8 +44,15 @@ fn cli() -> Command {
             )
 }
 
-fn ask_for_password() -> String {
-    rpassword::prompt_password("Enter the master key: ").unwrap()
+fn ask_for_password(p_master_key_file: &str) -> String {
+    let user_input_password = rpassword::prompt_password("Enter the master key: ").unwrap();
+    match neng_pass::query_master_key(p_master_key_file, &user_input_password) {
+        Ok(key) => key,
+        Err(err) => {
+            eprintln!("[ERROR]: {}", err.get_message());
+            std::process::exit(1);
+        }
+    }
 }
 
 fn main() {
@@ -93,14 +100,7 @@ fn main() {
             eprintln!("Successfully updated the master key file.");
         }
         Some(("new", sub_matches)) => {
-            let mut master_key = match neng_pass::query_master_key(&master_key_path, &ask_for_password()) {
-                Ok(key) => key,
-                Err(err) => {
-                    eprintln!("[ERROR]: {}", err.get_message());
-                    std::process::exit(1);
-                }
-            };
-
+            let mut master_key = ask_for_password(&master_key_path);
             let mut sql_statement = sql_connection
                 .prepare("SELECT name FROM passwords WHERE name = ?")
                 .unwrap();
@@ -144,13 +144,7 @@ fn main() {
             eprintln!("Created and saved password named '{}'", name);
         }
         Some(("get", sub_matches)) => {
-            let mut master_key = match neng_pass::query_master_key(&master_key_path, &ask_for_password()) {
-                Ok(key) => key,
-                Err(err) => {
-                    eprintln!("[ERROR]: {}", err.get_message());
-                    std::process::exit(1);
-                }
-            };
+            let mut master_key = ask_for_password(&master_key_path);
 
             while master_key.len() < MAX_MASTER_KEY_LEN {
                 master_key.push(' ');
@@ -198,13 +192,7 @@ fn main() {
             }
         }
         Some(("list", _)) => {
-            match neng_pass::query_master_key(&master_key_path, &ask_for_password()) {
-                Ok(key) => key,
-                Err(err) => {
-                    eprintln!("[ERROR]: {}", err.get_message());
-                    std::process::exit(1);
-                }
-            };
+            ask_for_password(&master_key_path);
 
             let sql_query = "SELECT name FROM passwords;";
             let mut sql_statement = sql_connection.prepare(sql_query).unwrap();
@@ -220,13 +208,7 @@ fn main() {
                 });
         }
         Some(("delete", sub_matches)) => {
-            match neng_pass::query_master_key(&master_key_path, &ask_for_password()) {
-                Ok(key) => key,
-                Err(err) => {
-                    eprintln!("[ERROR]: {}", err.get_message());
-                    std::process::exit(1);
-                }
-            };
+            ask_for_password(&master_key_path);
 
             let name: &String = sub_matches.get_one("NAME").unwrap();
 
