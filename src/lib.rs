@@ -10,6 +10,7 @@ use argon2::{password_hash::Error as Argon2Error, Argon2, PasswordHash, Password
 use std::io::Error as IOError;
 
 pub const MAX_MASTER_KEY_LEN: usize = 32;
+pub const MAX_PASSWORD_LEN: usize = 16;
 
 pub enum Error {
     HashError(Argon2Error),
@@ -94,3 +95,4 @@ pub fn query_master_key(p_master_key_file: &str, p_inputted_password: &str) -> R
 
     Ok(p_inputted_password.to_string())
 }
+
