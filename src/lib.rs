@@ -20,6 +20,7 @@ pub enum Error {
     DatabaseError(SqliteError),
     IOError(IOError),
     FromUtf8Error(FromUtf8Error),
+    MasterKeyDoesntExist,
     MasterKeyTooLong,
     MasterKeyAlreadyExists,
     PasswordAlreadyExists,
@@ -50,6 +51,9 @@ impl Error {
             }
             Error::MasterKeyAlreadyExists => {
                 format!("The master key has already been set. Don't try to set it again, as it will break stuff.")
+            }
+            Error::MasterKeyDoesntExist => {
+                "It looks like you didn't set a master key yet! Use the set-master command to do so.".to_string()
             }
             Error::PasswordAlreadyExists => {
                 format!("A password with that name already exists!")
@@ -102,7 +106,13 @@ pub fn query_master_key(
     p_master_key_file: &str,
     p_inputted_password: &str,
 ) -> Result<String, Error> {
-    let mut master_key_file = File::open(p_master_key_file)?;
+    let mut master_key_file = match File::open(p_master_key_file) {
+        Ok(key) => key,
+        Err(_) => {
+            return Err(Error::MasterKeyDoesntExist);
+        }
+    };
+
     let mut actual_key_hashed = Vec::new();
     master_key_file.read_to_end(&mut actual_key_hashed)?;
 
