@@ -1,8 +1,70 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use std::path::PathBuf;
+
+use directories::ProjectDirs;
+
+fn get_data_dir() -> PathBuf {
+    match ProjectDirs::from("io", "earthtraveller1", "neng-pass") {
+        Some(project_dirs) => project_dirs.data_dir().to_owned(),
+        None => PathBuf::from("./.neng-pass"),
+    }
+}
+
+fn open_and_prepare_database(data_dir: &PathBuf) -> Result<sqlite::Connection, String> {
+    let sql_connection = match sqlite::open(data_dir.join("passwords.db")) {
+        Ok(connection) => connection,
+        Err(err) => return Err(format!("Failed to open the database: {}", err)),
+    };
+
+    if let Err(err) =
+        sql_connection.execute("CREATE TABLE IF NOT EXISTS passwords (name TEXT, password BLOB);")
+    {
+        return Err(format!(
+            "Failed to prepare the table in the database: {}",
+            err
+        ));
+    }
+
+    Ok(sql_connection)
+}
+
+#[tauri::command]
+fn get_password_list() -> Result<Vec<String>, String> {
+    let data_dir = get_data_dir();
+    let sql_connection = open_and_prepare_database(&data_dir)?;
+
+    let mut sql_statement = match sql_connection.prepare("SELECT name FROM passwords") {
+        Err(err) => {
+            return Err(format!(
+                "Failed to query the database for a list of passwords: {}",
+                err
+            ))
+        }
+        Ok(statement) => statement,
+    };
+
+    let mut password_names = Vec::new();
+
+    for row in sql_statement.iter() {
+        match row {
+            Ok(row) => {
+                let name: &str = row.read(0);
+                password_names.push(name.to_string());
+            }
+            Err(err) => {
+                return Err(format!("Failed to read a row from the database: {}", err));
+            }
+        }
+    }
+
+    Ok(password_names)
+}
+
 fn main() {
-  tauri::Builder::default()
-    .run(tauri::generate_context!())
-    .expect("error while running tauri application");
+    tauri::Builder::default()
+        .invoke_handler(tauri::generate_handler![get_password_list])
+        .run(tauri::generate_context!())
+        .expect("error while running tauri application");
 }
