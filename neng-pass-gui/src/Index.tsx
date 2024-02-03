@@ -9,7 +9,15 @@ export default function Index() {
     })
 
     return <>
-        <h1 class="text-4xl text-left ml-8 my-10 font-bold w-fit">Your Passwords</h1>
+        <div class="flex flex-row">
+            <h1 class="text-4xl text-left ml-8 my-10 font-bold w-fit">Your Passwords</h1>
+            <button 
+                class={
+                    "text-4xl text-right w-fit bg-green-600 px-4 rounded-xl " + 
+                    "my-8 ml-auto mr-10 hover:bg-green-700 active:bg-green-800 duration-150"
+                }
+            >+</button>
+        </div>
 
         <For each={passwords()!}>
             {(password) => {
