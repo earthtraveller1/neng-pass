@@ -62,9 +62,21 @@ fn get_password_list() -> Result<Vec<String>, String> {
     Ok(password_names)
 }
 
+#[tauri::command]
+fn create_password(p_master_key: &str, p_name: &str) -> Result<(), String> {
+    let data_dir = get_data_dir();
+    let sql_connection = open_and_prepare_database(&data_dir)?;
+
+    match neng_pass::create_password(p_master_key.to_string(), p_name, &sql_connection) {
+        Ok(_) => Ok(()),
+        Err(err) => Err(err.get_message())
+    }
+}
+
 fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![get_password_list])
+        .invoke_handler(tauri::generate_handler![create_password])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
