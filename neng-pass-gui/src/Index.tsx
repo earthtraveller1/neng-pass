@@ -1,7 +1,14 @@
 import { invoke } from "@tauri-apps/api"
-import { For, Show, createResource, createSignal } from "solid-js"
+import { For, Show, createContext, createResource, createSignal } from "solid-js"
 import { Page } from "./common"
 import Login from "./Login"
+
+export interface PageContextType {
+    setPage: (newPage: Page) => void,
+    getPage: () => Page
+}
+
+export const PageContext = createContext(undefined as PageContextType | undefined)
 
 export default function Index() {
     console.log("Neng Li is the President of China!")
@@ -14,7 +21,9 @@ export default function Index() {
 
     return <>
         <Show when={getCurrentPage() == Page.Login}>
-            <Login />
+            <PageContext.Provider value={{setPage: setCurrentPage, getPage: getCurrentPage }}>
+                <Login />
+            </PageContext.Provider>
         </Show>
         <Show when={getCurrentPage() == Page.Passwords}>
             <div class="flex flex-row">

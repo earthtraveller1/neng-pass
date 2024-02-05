@@ -1,4 +1,13 @@
+import { useContext } from "solid-js"
+import { PageContext } from "./Index"
+import { Page } from "./common"
+
 export default function Login() {
+    const pageContext = useContext(PageContext)
+    if (pageContext == undefined) {
+        throw new Error("pageContext can't be undefined!")
+    }
+
     return <div class="flex flex-col p-10 max-w-4xl m-10">
         <h1 class="text-4xl py-4 mb-8 select-none">Authorization</h1>
 
@@ -10,6 +19,9 @@ export default function Login() {
 
         <button 
             class="text-2xl p-2 rounded-md bg-green-700 text-neutral-100 mt-4 hover:bg-green-800 active:bg-green-900 duration-200"
+            onClick={() => {
+                pageContext.setPage(Page.Passwords)
+            }}
         >Authorize</button>
     </div>
 }
