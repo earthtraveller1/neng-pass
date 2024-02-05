@@ -78,11 +78,11 @@ fn create_password(p_master_key: &str, p_name: &str) -> Result<(), String> {
 }
 
 #[tauri::command]
-fn is_master_key_correct(p_master_key: &str) -> bool {
+async fn is_master_key_correct(p_master_key: &str) -> Result<bool, ()> {
     let mut data_dir = get_data_dir();
     data_dir.push("master_key");
 
-    neng_pass::query_master_key(data_dir.to_str().unwrap(), p_master_key).is_ok()
+    Ok(neng_pass::query_master_key(data_dir.to_str().unwrap(), p_master_key).is_ok())
 }
 
 fn main() {
