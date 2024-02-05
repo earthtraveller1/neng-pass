@@ -1,4 +1,4 @@
-import { Show, createSignal, useContext } from "solid-js"
+import { createSignal, useContext } from "solid-js"
 import { PageContext } from "./Index"
 import { Page } from "./common"
 import { invoke } from "@tauri-apps/api"
@@ -9,11 +9,15 @@ export default function Login() {
         throw new Error("pageContext can't be undefined!")
     }
 
-    const [shouldShowMessage, setShouldShowMessage] = createSignal(false)
+    const [getMessageHeight, setMessageHeight] = createSignal("max-h-0")
     const [getEnteredPassword, setEnteredPassword] = createSignal("")
 
     return <div class="flex flex-col p-10 max-w-4xl m-10">
         <h1 class="text-4xl py-4 mb-8 select-none">Authorization</h1>
+
+        <div class={`text-xl bg-red-800 ${getMessageHeight()} duration-500 rounded-xl overflow-hidden text-center select-none`}>
+            Incorrect Master Key
+        </div>
 
         <input 
             type="password" 
@@ -32,13 +36,9 @@ export default function Login() {
                 if (master_key_correct) {
                     pageContext.setPage(Page.Passwords)
                 } else {
-                    setShouldShowMessage(true)
+                    setMessageHeight("max-h-auto p-2 mb-6")
                 }
             }}
         >Authorize</button>
-
-        <Show when={shouldShowMessage()}>
-            The password is incorrect, bozo!
-        </Show>
     </div>
 }
