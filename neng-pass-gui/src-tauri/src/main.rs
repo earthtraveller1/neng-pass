@@ -75,8 +75,7 @@ fn create_password(p_master_key: &str, p_name: &str) -> Result<(), String> {
 
 fn main() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![get_password_list])
-        .invoke_handler(tauri::generate_handler![create_password])
+        .invoke_handler(tauri::generate_handler![get_password_list, create_password])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
