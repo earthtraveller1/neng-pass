@@ -5,6 +5,10 @@ use std::path::PathBuf;
 
 use directories::ProjectDirs;
 
+struct InternalState {
+    master_key: Option<String>,
+}
+
 fn get_data_dir() -> PathBuf {
     match ProjectDirs::from("io", "earthtraveller1", "neng-pass") {
         Some(project_dirs) => project_dirs.data_dir().to_owned(),
@@ -69,12 +73,13 @@ fn create_password(p_master_key: &str, p_name: &str) -> Result<(), String> {
 
     match neng_pass::create_password(p_master_key.to_string(), p_name, &sql_connection) {
         Ok(_) => Ok(()),
-        Err(err) => Err(err.get_message())
+        Err(err) => Err(err.get_message()),
     }
 }
 
 fn main() {
     tauri::Builder::default()
+        .manage(InternalState { master_key: None })
         .invoke_handler(tauri::generate_handler![get_password_list, create_password])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
