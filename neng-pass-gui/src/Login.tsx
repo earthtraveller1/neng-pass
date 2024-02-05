@@ -22,7 +22,7 @@ export default function Login() {
         <input 
             type="password" 
             placeholder="Master Key" 
-            class="p-4 bg-neutral-800 outline-none focus:border-b-8 border-blue-400 duration-300"
+            class="p-4 bg-neutral-800 outline-none focus:border-b-8 border-blue-400 duration-300 hover:bg-neutral-700 focus:bg-slate-800"
             onInput={(event) => {
                 setEnteredPassword(event.target.value)
             }}
