@@ -77,10 +77,22 @@ fn create_password(p_master_key: &str, p_name: &str) -> Result<(), String> {
     }
 }
 
+#[tauri::command]
+fn is_master_key_correct(p_master_key: &str) -> bool {
+    let mut data_dir = get_data_dir();
+    data_dir.push("master_key");
+
+    neng_pass::query_master_key(data_dir.to_str().unwrap(), p_master_key).is_ok()
+}
+
 fn main() {
     tauri::Builder::default()
         .manage(InternalState { master_key: None })
-        .invoke_handler(tauri::generate_handler![get_password_list, create_password])
+        .invoke_handler(tauri::generate_handler![
+            get_password_list,
+            create_password,
+            is_master_key_correct
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
