@@ -32,10 +32,12 @@ export default function Login() {
         <button 
             class="text-2xl p-2 rounded-md bg-green-700 text-neutral-100 mt-4 hover:bg-green-800 active:bg-green-900 duration-200"
             onClick={async () => {
-                const master_key_correct = await invoke<boolean>("is_master_key_correct", { pMasterKey: getEnteredPassword() })
+                const master_key = getEnteredPassword()
+                const master_key_correct = await invoke<boolean>("is_master_key_correct", { pMasterKey: master_key })
 
                 if (master_key_correct) {
                     pageContext.setPage(Page.Passwords)
+                    await invoke("set_master_key", { pMasterKey: master_key})
                 } else {
                     setMessageHeight("max-h-auto p-2 mb-6")
                 }
