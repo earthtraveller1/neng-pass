@@ -1,7 +1,7 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use std::path::PathBuf;
+use std::{path::PathBuf, sync::Mutex};
 
 use directories::ProjectDirs;
 
@@ -85,13 +85,28 @@ async fn is_master_key_correct(p_master_key: &str) -> Result<bool, ()> {
     Ok(neng_pass::query_master_key(data_dir.to_str().unwrap(), p_master_key).is_ok())
 }
 
+#[tauri::command]
+async fn set_master_key(
+    p_master_key: &str,
+    p_state: tauri::State<'_, Mutex<InternalState>>,
+) -> Result<(), String> {
+    (match p_state.lock() {
+        Ok(key) => key,
+        Err(_) => return Err("Failed to acquire a lock for the master key.".to_string()),
+    })
+    .master_key = Some(p_master_key.to_string());
+
+    Ok(())
+}
+
 fn main() {
     tauri::Builder::default()
-        .manage(InternalState { master_key: None })
+        .manage(Mutex::new(InternalState { master_key: None }))
         .invoke_handler(tauri::generate_handler![
             get_password_list,
             create_password,
-            is_master_key_correct
+            is_master_key_correct,
+            set_master_key
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
