@@ -9,10 +9,26 @@ struct InternalState {
     master_key: Option<String>,
 }
 
-fn get_data_dir() -> PathBuf {
-    match ProjectDirs::from("io", "earthtraveller1", "neng-pass") {
-        Some(project_dirs) => project_dirs.data_dir().to_owned(),
-        None => PathBuf::from("./.neng-pass"),
+struct StaticState {
+    data_dir: PathBuf,
+}
+
+struct State {
+    internal_state: Mutex<InternalState>,
+    static_state: StaticState,
+}
+
+impl State {
+    fn new() -> State {
+        State {
+            internal_state: Mutex::new(InternalState { master_key: None }),
+            static_state: StaticState {
+                data_dir: match ProjectDirs::from("io", "earthtraveller1", "neng-pass") {
+                    Some(project_dirs) => project_dirs.data_dir().to_owned(),
+                    None => PathBuf::from("./.neng-pass"),
+                },
+            },
+        }
     }
 }
 
@@ -35,9 +51,8 @@ fn open_and_prepare_database(data_dir: &PathBuf) -> Result<sqlite::Connection, S
 }
 
 #[tauri::command]
-fn get_password_list() -> Result<Vec<String>, String> {
-    let data_dir = get_data_dir();
-    let sql_connection = open_and_prepare_database(&data_dir)?;
+fn get_password_list(p_state: tauri::State<'_, State>) -> Result<Vec<String>, String> {
+    let sql_connection = open_and_prepare_database(&p_state.static_state.data_dir)?;
 
     let mut sql_statement = match sql_connection.prepare("SELECT name FROM passwords") {
         Err(err) => {
@@ -67,9 +82,8 @@ fn get_password_list() -> Result<Vec<String>, String> {
 }
 
 #[tauri::command]
-fn create_password(p_master_key: &str, p_name: &str) -> Result<(), String> {
-    let data_dir = get_data_dir();
-    let sql_connection = open_and_prepare_database(&data_dir)?;
+fn create_password(p_state: tauri::State<'_, State>, p_master_key: &str, p_name: &str) -> Result<(), String> {
+    let sql_connection = open_and_prepare_database(&p_state.static_state.data_dir)?;
 
     match neng_pass::create_password(p_master_key.to_string(), p_name, &sql_connection) {
         Ok(_) => Ok(()),
@@ -78,8 +92,8 @@ fn create_password(p_master_key: &str, p_name: &str) -> Result<(), String> {
 }
 
 #[tauri::command]
-async fn is_master_key_correct(p_master_key: &str) -> Result<bool, ()> {
-    let mut data_dir = get_data_dir();
+async fn is_master_key_correct(p_state: tauri::State<'_, State>, p_master_key: &str) -> Result<bool, ()> {
+    let mut data_dir = p_state.static_state.data_dir.clone();
     data_dir.push("master_key");
 
     Ok(neng_pass::query_master_key(data_dir.to_str().unwrap(), p_master_key).is_ok())
@@ -88,9 +102,9 @@ async fn is_master_key_correct(p_master_key: &str) -> Result<bool, ()> {
 #[tauri::command]
 async fn set_master_key(
     p_master_key: &str,
-    p_state: tauri::State<'_, Mutex<InternalState>>,
+    p_state: tauri::State<'_, State>,
 ) -> Result<(), String> {
-    (match p_state.lock() {
+    (match p_state.internal_state.lock() {
         Ok(key) => key,
         Err(_) => return Err("Failed to acquire a lock for the master key.".to_string()),
     })
@@ -101,7 +115,7 @@ async fn set_master_key(
 
 fn main() {
     tauri::Builder::default()
-        .manage(Mutex::new(InternalState { master_key: None }))
+        .manage(State::new())
         .invoke_handler(tauri::generate_handler![
             get_password_list,
             create_password,
