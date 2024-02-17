@@ -3,6 +3,7 @@ import { PageContext } from "./Index"
 import { Page } from "./common"
 import { invoke } from "@tauri-apps/api"
 import PasswordInput from "./PasswordInput"
+import Button from "./Button"
 
 export default function Login() {
     const pageContext = useContext(PageContext)
@@ -25,19 +26,16 @@ export default function Login() {
             setMessageHeight("max-h-0")
         }}/>
 
-        <button 
-            class="text-2xl p-2 rounded-md bg-green-700 text-neutral-100 mt-4 hover:bg-green-800 active:bg-green-900 duration-200"
-            onClick={async () => {
-                const masterKey = getEnteredPassword()
-                const masterKeyCorrect = await invoke<boolean>("is_master_key_correct", { pMasterKey: masterKey })
+        <Button label="Authorize" onClick={async () => {
+            const masterKey = getEnteredPassword()
+            const masterKeyCorrect = await invoke<boolean>("is_master_key_correct", { pMasterKey: masterKey })
 
-                if (masterKeyCorrect) {
-                    pageContext.setPage(Page.Passwords)
-                    await invoke("set_master_key", { pMasterKey: masterKey})
-                } else {
-                    setMessageHeight("max-h-auto p-2 mb-6")
-                }
-            }}
-        >Authorize</button>
+            if (masterKeyCorrect) {
+                pageContext.setPage(Page.Passwords)
+                await invoke("set_master_key", { pMasterKey: masterKey})
+            } else {
+                setMessageHeight("max-h-auto p-2 mb-6")
+            }
+        }} />
     </div>
 }
