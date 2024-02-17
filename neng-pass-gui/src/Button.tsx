@@ -2,7 +2,7 @@ import { JSX } from "solid-js/jsx-runtime"
 
 interface ButtonProps {
     label: string,
-    onClick: JSX.EventHandlerUnion<HTMLButtonElement, MouseEvent>
+    onClick: JSX.EventHandlerUnion<HTMLButtonElement, MouseEvent> | undefined
 }
 
 export default function Button(props: ButtonProps) {
