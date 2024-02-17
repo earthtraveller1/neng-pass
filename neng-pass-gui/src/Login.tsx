@@ -2,6 +2,7 @@ import { createSignal, useContext } from "solid-js"
 import { PageContext } from "./Index"
 import { Page } from "./common"
 import { invoke } from "@tauri-apps/api"
+import PasswordInput from "./PasswordInput"
 
 export default function Login() {
     const pageContext = useContext(PageContext)
@@ -19,15 +20,10 @@ export default function Login() {
             Incorrect Master Key
         </div>
 
-        <input 
-            type="password" 
-            placeholder="Master Key" 
-            class="p-4 bg-neutral-800 outline-none focus:border-b-8 border-blue-400 duration-300 hover:bg-neutral-700 focus:bg-slate-800"
-            onInput={(event) => {
-                setEnteredPassword(event.target.value)
-                setMessageHeight("max-h-0")
-            }}
-        />
+        <PasswordInput label="Master Key" onInput={event => {
+            setEnteredPassword(event.target.value)
+            setMessageHeight("max-h-0")
+        }}/>
 
         <button 
             class="text-2xl p-2 rounded-md bg-green-700 text-neutral-100 mt-4 hover:bg-green-800 active:bg-green-900 duration-200"
