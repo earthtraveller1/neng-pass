@@ -1,7 +1,7 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use std::{path::PathBuf, sync::Mutex};
+use std::{path::PathBuf, sync::Mutex, fs::File};
 
 use directories::ProjectDirs;
 
@@ -113,6 +113,14 @@ async fn set_master_key(
     Ok(())
 }
 
+#[tauri::command]
+fn is_master_key_set(p_state: tauri::State<'_, State>) -> bool {
+    match File::open(&p_state.static_state.data_dir) {
+        Ok(_) => true,
+        Err(_) => false,
+    }
+}
+
 fn main() {
     tauri::Builder::default()
         .manage(State::new())
@@ -120,7 +128,8 @@ fn main() {
             get_password_list,
             create_password,
             is_master_key_correct,
-            set_master_key
+            set_master_key,
+            is_master_key_set,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
