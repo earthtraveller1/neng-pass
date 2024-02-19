@@ -2,8 +2,8 @@ import { createSignal, useContext } from "solid-js"
 import { PageContext } from "./Index"
 import { Page } from "./common"
 import { invoke } from "@tauri-apps/api"
-import PasswordInput from "./PasswordInput"
-import Button from "./Button"
+import PasswordInput from "./components/PasswordInput"
+import Button from "./components/Button"
 
 export default function Login() {
     const pageContext = useContext(PageContext)
