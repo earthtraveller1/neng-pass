@@ -94,6 +94,12 @@ impl From<FromUtf8Error> for Error {
     }
 }
 
+impl From<Error> for String {
+    fn from(value: Error) -> Self {
+        value.get_message()
+    }
+}
+
 pub fn set_master_key(p_file: &str, p_new_key: &str) -> Result<(), Error> {
     if File::open(p_file).is_ok() {
         return Err(Error::MasterKeyAlreadyExists);
