@@ -1,7 +1,7 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use std::{path::PathBuf, sync::Mutex, fs::File};
+use std::{fs::File, path::PathBuf, sync::Mutex};
 
 use directories::ProjectDirs;
 
@@ -82,7 +82,11 @@ fn get_password_list(p_state: tauri::State<'_, State>) -> Result<Vec<String>, St
 }
 
 #[tauri::command]
-fn create_password(p_state: tauri::State<'_, State>, p_master_key: &str, p_name: &str) -> Result<(), String> {
+fn create_password(
+    p_state: tauri::State<'_, State>,
+    p_master_key: &str,
+    p_name: &str,
+) -> Result<(), String> {
     let sql_connection = open_and_prepare_database(&p_state.static_state.data_dir)?;
 
     match neng_pass::create_password(p_master_key.to_string(), p_name, &sql_connection) {
@@ -92,7 +96,10 @@ fn create_password(p_state: tauri::State<'_, State>, p_master_key: &str, p_name:
 }
 
 #[tauri::command]
-async fn is_master_key_correct(p_state: tauri::State<'_, State>, p_master_key: &str) -> Result<bool, ()> {
+async fn is_master_key_correct(
+    p_state: tauri::State<'_, State>,
+    p_master_key: &str,
+) -> Result<bool, ()> {
     let mut data_dir = p_state.static_state.data_dir.clone();
     data_dir.push("master_key");
 
@@ -124,6 +131,24 @@ fn is_master_key_set(p_state: tauri::State<'_, State>) -> bool {
     }
 }
 
+#[tauri::command]
+fn set_new_master_key(
+    p_state: tauri::State<'_, State>,
+    p_new_master_key: &str,
+) -> Result<(), String> {
+    let mut master_key_path = p_state.static_state.data_dir.clone();
+    master_key_path.push("master_key");
+
+    neng_pass::set_master_key(
+        master_key_path
+            .to_str()
+            .ok_or(neng_pass::Error::UnknownError)?,
+        p_new_master_key,
+    )?;
+
+    Ok(())
+}
+
 fn main() {
     tauri::Builder::default()
         .manage(State::new())
@@ -133,6 +158,7 @@ fn main() {
             is_master_key_correct,
             set_master_key,
             is_master_key_set,
+            set_new_master_key,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
