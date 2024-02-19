@@ -25,6 +25,7 @@ pub enum Error {
     MasterKeyAlreadyExists,
     PasswordAlreadyExists,
     PasswordDoesntExist(Box<str>),
+    UnknownError,
 }
 
 impl Error {
@@ -61,6 +62,9 @@ impl Error {
             },
             Error::PasswordDoesntExist(name) => {
                 format!("There appears to be no password saved that is named {}", name)
+            },
+            Error::UnknownError => {
+                "Sorry, but something went wrong.".to_string()
             }
         }
     }
