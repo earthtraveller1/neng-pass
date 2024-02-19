@@ -115,7 +115,10 @@ async fn set_master_key(
 
 #[tauri::command]
 fn is_master_key_set(p_state: tauri::State<'_, State>) -> bool {
-    match File::open(&p_state.static_state.data_dir) {
+    let mut master_key_path = p_state.static_state.data_dir.clone();
+    master_key_path.push("master_key");
+
+    match File::open(&master_key_path) {
         Ok(_) => true,
         Err(_) => false,
     }
