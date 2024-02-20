@@ -1,5 +1,5 @@
-import PasswordInput from "./PasswordInput"
-import Button from "./Button"
+import PasswordInput from "./components/PasswordInput"
+import Button from "./components/Button"
 
 export default function Setup() {
     return <div class="flex flex-col p-2 max-w-4xl m-10">
