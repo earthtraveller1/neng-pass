@@ -11,10 +11,15 @@ export default function Passwords() {
             <h1 class="text-4xl text-left ml-8 my-10 font-bold w-fit">Your Passwords</h1>
             <button 
                 class={
-                    "text-4xl text-right w-fit bg-green-600 px-4 rounded-xl " + 
+                    "text-4xl text-right w-fit bg-green-600 rounded-xl max-h-fit px-1 " + 
                     "my-8 ml-auto mr-10 hover:bg-green-700 active:bg-green-800 duration-150"
                 }
-            >+</button>
+            >
+                <svg width="48" height="48">
+                    <rect width="36" height="6" x="6" y="21" rx="2" ry="2" fill="white"/>
+                    <rect width="6" height="36" x="21" y="6" rx="2" ry="2" fill="white"/>
+                </svg>
+            </button>
         </div>
 
         <For each={passwords()!}>
