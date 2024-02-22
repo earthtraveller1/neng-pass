@@ -20,14 +20,17 @@ struct State {
 
 impl State {
     fn new() -> State {
+        // Ensure that the data directory is created properly.
+        let data_dir = match ProjectDirs::from("io", "earthtraveller1", "neng-pass") {
+            Some(project_dirs) => project_dirs.data_dir().to_owned(),
+            None => PathBuf::from("./.neng-pass"),
+        };
+
+        std::fs::create_dir_all(&data_dir).unwrap();
+
         State {
             internal_state: Mutex::new(InternalState { master_key: None }),
-            static_state: StaticState {
-                data_dir: match ProjectDirs::from("io", "earthtraveller1", "neng-pass") {
-                    Some(project_dirs) => project_dirs.data_dir().to_owned(),
-                    None => PathBuf::from("./.neng-pass"),
-                },
-            },
+            static_state: StaticState { data_dir },
         }
     }
 }
