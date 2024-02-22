@@ -7,6 +7,6 @@ interface ErrorBoxProps {
 
 export default function ErrorBox(props: ErrorBoxProps) {
     return <div class={`text-xl bg-red-800 ${props.heightClass} duration-500 rounded-xl overflow-hidden text-center select-none`}>
-        ${props.children}
+        {props.children}
     </div>
 }
