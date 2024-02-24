@@ -19,11 +19,11 @@ export default function Setup() {
 
         <ErrorBox heightClass={getErrorBoxHeightClass()}>The keys that you entered do not match</ErrorBox>
 
-        <TextInputField label="New Master Key" onInput={(event) => {
+        <TextInputField type="password" label="New Master Key" onInput={(event) => {
             setErrorBoxHeightClass("max-h-0")
             setNewMasterKey(event.target.value.trim())
         }} />
-        <TextInputField label="Confirm Master Key" onInput={(event) => {
+        <TextInputField type="password" label="Confirm Master Key" onInput={(event) => {
             setErrorBoxHeightClass("max-h-0")
             setConfirmMasterKey(event.target.value.trim())
         }} />
