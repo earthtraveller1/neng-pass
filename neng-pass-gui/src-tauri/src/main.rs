@@ -87,12 +87,17 @@ fn get_password_list(p_state: tauri::State<'_, State>) -> Result<Vec<String>, St
 #[tauri::command]
 fn create_password(
     p_state: tauri::State<'_, State>,
-    p_master_key: &str,
     p_name: &str,
 ) -> Result<(), String> {
     let sql_connection = open_and_prepare_database(&p_state.static_state.data_dir)?;
+    let internal_state = p_state.internal_state.lock().unwrap();
 
-    match neng_pass::create_password(p_master_key.to_string(), p_name, &sql_connection) {
+    let master_key = match &internal_state.master_key {
+        Some(master_key) => master_key,
+        None => return Err("The master has not been set yet!".to_string())
+    };
+
+    match neng_pass::create_password(master_key.clone(), p_name, &sql_connection) {
         Ok(_) => Ok(()),
         Err(err) => Err(err.get_message()),
     }
