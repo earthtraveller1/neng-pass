@@ -2,7 +2,7 @@ import { createSignal, useContext } from "solid-js"
 import { PageContext } from "./Index"
 import { Page } from "./common"
 import { invoke } from "@tauri-apps/api"
-import PasswordInput from "./components/PasswordInput"
+import TextInputField from "./components/PasswordInput"
 import Button from "./components/Button"
 import ErrorBox from "./components/ErrorBox"
 
@@ -22,7 +22,7 @@ export default function Login() {
             Incorrect Master Key
         </ErrorBox>
 
-        <PasswordInput label="Master Key" onInput={event => {
+        <TextInputField type="password" label="Master Key" onInput={event => {
             setEnteredPassword(event.target.value)
             setMessageHeight("max-h-0")
         }}/>

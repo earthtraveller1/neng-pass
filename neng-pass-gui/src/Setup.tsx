@@ -1,4 +1,4 @@
-import PasswordInput from "./components/PasswordInput"
+import TextInputField from "./components/PasswordInput"
 import Button from "./components/Button"
 import { createSignal, useContext } from "solid-js"
 import ErrorBox from "./components/ErrorBox"
@@ -19,11 +19,11 @@ export default function Setup() {
 
         <ErrorBox heightClass={getErrorBoxHeightClass()}>The keys that you entered do not match</ErrorBox>
 
-        <PasswordInput label="New Master Key" onInput={(event) => {
+        <TextInputField label="New Master Key" onInput={(event) => {
             setErrorBoxHeightClass("max-h-0")
             setNewMasterKey(event.target.value.trim())
         }} />
-        <PasswordInput label="Confirm Master Key" onInput={(event) => {
+        <TextInputField label="Confirm Master Key" onInput={(event) => {
             setErrorBoxHeightClass("max-h-0")
             setConfirmMasterKey(event.target.value.trim())
         }} />
