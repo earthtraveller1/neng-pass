@@ -1,4 +1,4 @@
-import TextInputField from "./components/PasswordInput"
+import TextInputField from "./components/TextInputField"
 import Button from "./components/Button"
 import { createSignal, useContext } from "solid-js"
 import ErrorBox from "./components/ErrorBox"

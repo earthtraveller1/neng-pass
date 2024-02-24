@@ -1,5 +1,5 @@
 import { createSignal } from "solid-js";
-import TextInputField from "./components/PasswordInput";
+import TextInputField from "./components/TextInputField";
 import Button from "./components/Button";
 
 export default function NewPassword() {

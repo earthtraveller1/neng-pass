@@ -2,7 +2,7 @@ import { createSignal, useContext } from "solid-js"
 import { PageContext } from "./Index"
 import { Page } from "./common"
 import { invoke } from "@tauri-apps/api"
-import TextInputField from "./components/PasswordInput"
+import TextInputField from "./components/TextInputField"
 import Button from "./components/Button"
 import ErrorBox from "./components/ErrorBox"
 
