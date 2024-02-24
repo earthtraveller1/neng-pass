@@ -1,10 +1,17 @@
-import { For, createResource } from "solid-js"
+import { For, createResource, useContext } from "solid-js"
 import { invoke } from "@tauri-apps/api"
+import { PageContext } from "./Index"
+import { Page } from "./common"
 
 export default function Passwords() {
     const [passwords, { mutate : mutatePasswords, refetch : refetchPasswords }] = createResource(async () => {
         return await invoke("get_password_list") as string[]
     })
+
+    const pageContext = useContext(PageContext)
+    if (pageContext == undefined) {
+        throw Error("The page context has not been set! What the actual fuck?")
+    }
 
     return (<>
         <div class="flex flex-row">
@@ -14,6 +21,9 @@ export default function Passwords() {
                     "text-4xl text-right w-fit bg-green-600 rounded-xl max-h-fit px-1 " + 
                     "my-8 ml-auto mr-10 hover:bg-green-700 active:bg-green-800 duration-150"
                 }
+                onClick={() => {
+                    pageContext.setPage(Page.NewPassword)
+                }}
             >
                 <svg width="48" height="48">
                     <rect width="36" height="6" x="6" y="21" rx="2" ry="2" fill="white"/>

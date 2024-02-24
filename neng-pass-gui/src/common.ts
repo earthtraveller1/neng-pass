@@ -1,5 +1,6 @@
 export enum Page {
     Setup,
     Login,
-    Passwords
+    Passwords,
+    NewPassword
 }

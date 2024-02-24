@@ -4,6 +4,7 @@ import Login from "./Login"
 import Setup from "./Setup"
 import Passwords from "./Passwords"
 import { invoke } from "@tauri-apps/api"
+import NewPassword from "./NewPassword"
 
 export interface PageContextType {
     setPage: (newPage: Page) => void,
@@ -23,15 +24,18 @@ export default function Index() {
     })
 
     return <>
-        <Show when={getCurrentPage() == Page.Login}>
-            <PageContext.Provider value={{setPage: setCurrentPage, getPage: getCurrentPage }}>
+        <PageContext.Provider value={{setPage: setCurrentPage, getPage: getCurrentPage }}>
+            <Show when={getCurrentPage() == Page.Login}>
                 <Show when={isMasterKeySet()} fallback={<Setup />}> 
                     <Login />
                 </Show>
-            </PageContext.Provider>
-        </Show>
-        <Show when={getCurrentPage() == Page.Passwords}>
-            <Passwords />
-        </Show>
+            </Show>
+            <Show when={getCurrentPage() == Page.Passwords}>
+                <Passwords />
+            </Show>
+            <Show when={getCurrentPage() == Page.NewPassword}>
+                <NewPassword />
+            </Show>
+        </PageContext.Provider>
     </>
 }
