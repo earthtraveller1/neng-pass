@@ -28,7 +28,7 @@ export default function Login() {
         }
     }
 
-    return <div class="flex flex-col p-10 max-w-4xl m-10">
+    return <div class="flex flex-col p-10 max-height-screen max-w-4xl">
         <h1 class="text-4xl py-4 mb-8 select-none">Authorization</h1>
 
         <ErrorBox heightClass={getMessageHeight()}>
