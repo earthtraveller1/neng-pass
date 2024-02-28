@@ -14,7 +14,7 @@ export default function Passwords() {
     }
 
     return (<>
-        <div class="flex flex-row">
+        <div class="flex flex-row sticky top-0 bg-neutral-800">
             <h1 class="text-4xl text-left ml-8 my-10 font-bold w-fit">Your Passwords</h1>
             <button 
                 class={
