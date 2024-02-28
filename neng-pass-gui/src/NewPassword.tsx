@@ -13,16 +13,24 @@ export default function NewPassword() {
         throw new Error("Page context was not provided")
     }
 
+    async function createThePassword() {
+        await invoke("create_password", { pName: getNewPasswordName() })
+        if (pageContext != undefined) {
+            pageContext.setPage(Page.Passwords)
+        }
+    }
+
     return <div class="flex flex-col max-w-4xl m-10">
         <h1 class="text-4xl py-4 mb-8 select-none">Create a new Password</h1>
 
         <TextInputField type="text" label="Name" onInput={(event) => {
             setNewPasswordName(event.target.value)
-        }} />
+        }} onEnterKey={async () => {
+            await createThePassword()
+        }}/>
 
         <Button label="Create" onClick={async () => {
-            await invoke("create_password", { pName: getNewPasswordName() })
-            pageContext.setPage(Page.Passwords)
+            await createThePassword()
         }} />
     </div>
 }
