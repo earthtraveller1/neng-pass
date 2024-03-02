@@ -5,6 +5,7 @@ import Setup from "./Setup"
 import Passwords from "./Passwords"
 import { invoke } from "@tauri-apps/api"
 import NewPassword from "./NewPassword"
+import Password from "./Password"
 
 export interface PageContextType {
     setPage: (newPage: Page) => void,
@@ -43,6 +44,9 @@ export default function Index() {
                 </Show>
                 <Show when={getCurrentPage() == Page.NewPassword}>
                     <NewPassword />
+                </Show>
+                <Show when={getCurrentPage() == Page.Password}>
+                    <Password />
                 </Show>
             </PageContext.Provider>
         </PasswordContext.Provider>
