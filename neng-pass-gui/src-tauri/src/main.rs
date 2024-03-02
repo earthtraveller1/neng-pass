@@ -129,6 +129,17 @@ async fn set_master_key(
 }
 
 #[tauri::command]
+async fn delete_password(
+    p_name: &str,
+    p_state: tauri::State<'_, State>
+) -> Result<(), String> {
+    let sql_connection = open_and_prepare_database(&p_state.static_state.data_dir)?;
+    neng_pass::delete_password(p_name, &sql_connection)?;
+
+    Ok(())
+}
+
+#[tauri::command]
 fn is_master_key_set(p_state: tauri::State<'_, State>) -> bool {
     let mut master_key_path = p_state.static_state.data_dir.clone();
     master_key_path.push("master_key");
@@ -167,6 +178,7 @@ fn main() {
             set_master_key,
             is_master_key_set,
             set_new_master_key,
+            delete_password,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
