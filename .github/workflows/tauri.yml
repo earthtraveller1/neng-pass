@@ -40,6 +40,7 @@ jobs:
           node-version: 'lts/*'
           cache: 'npm' # Set this to npm, yarn or pnpm.
           node-version-file: './neng-pass-gui/package.json'
+          cache-dependency-path: './neng-pass-gui/package-lock.json'
 
       - name: Install frontend dependencies
         # If you don't have `beforeBuildCommand` configured you may want to build your frontend here too.
