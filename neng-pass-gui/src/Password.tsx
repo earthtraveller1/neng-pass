@@ -1,7 +1,7 @@
 import { useContext } from "solid-js"
 import { PasswordContext } from "./Index"
 
-export default function Passwowrd() {
+export default function Password() {
     const passwordContext = useContext(PasswordContext)
     if (passwordContext == undefined) {
         throw new Error("The password context must be provided!")
