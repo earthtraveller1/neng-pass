@@ -1,6 +1,6 @@
 import { For, createResource, useContext } from "solid-js"
 import { invoke } from "@tauri-apps/api"
-import { PageContext } from "./Index"
+import { PageContext, PasswordContext } from "./Index"
 import { Page } from "./common"
 
 export default function Passwords() {
@@ -11,6 +11,11 @@ export default function Passwords() {
     const pageContext = useContext(PageContext)
     if (pageContext == undefined) {
         throw Error("The page context has not been set! What the actual fuck?")
+    }
+
+    const passwordContext = useContext(PasswordContext)
+    if (passwordContext == undefined) {
+        throw Error("The password context has not been set! What the actual fuck?")
     }
 
     return (<>
@@ -37,7 +42,10 @@ export default function Passwords() {
                 return <button class={
                     "my-1 pl-8 py-2 border-y-2 border-neutral-500 select-none w-full text-left " + 
                     "duration-150 hover:border-y-4 hover:bg-neutral-700 active:border-neutral-300 hover:bg-neutral-600"
-                }>{password}</button>
+                } onClick={() => {
+                    passwordContext.setPassword(password)
+                    pageContext.setPage(Page.Password)
+                }}>{password}</button>
             }}
         </For>
     </>)
