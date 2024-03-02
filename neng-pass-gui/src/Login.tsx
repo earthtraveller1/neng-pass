@@ -3,7 +3,7 @@ import { PageContext } from "./Index"
 import { Page } from "./common"
 import { invoke } from "@tauri-apps/api"
 import TextInputField from "./components/TextInputField"
-import Button from "./components/Button"
+import Button, { ButtonStyle } from "./components/Button"
 import ErrorBox from "./components/ErrorBox"
 
 export default function Login() {
@@ -40,7 +40,7 @@ export default function Login() {
             setMessageHeight("max-h-0")
         }} onEnterKey={() => authorize()}/>
 
-        <Button label="Authorize" onClick={async () => {
+        <Button label="Authorize" style={ButtonStyle.Green} onClick={async () => {
             authorize()
         }} />
     </div>

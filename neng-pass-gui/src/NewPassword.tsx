@@ -1,6 +1,6 @@
 import { createSignal, useContext } from "solid-js";
 import TextInputField from "./components/TextInputField";
-import Button from "./components/Button";
+import Button, { ButtonStyle } from "./components/Button";
 import { invoke } from "@tauri-apps/api";
 import { PageContext } from "./Index";
 import { Page } from "./common";
@@ -29,7 +29,7 @@ export default function NewPassword() {
             await createThePassword()
         }}/>
 
-        <Button label="Create" onClick={async () => {
+        <Button label="Create" style={ButtonStyle.Green} onClick={async () => {
             await createThePassword()
         }} />
     </div>
