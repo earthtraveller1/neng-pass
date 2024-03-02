@@ -22,7 +22,8 @@
       },
       "externalBin": [],
       "icon": [
-        "icons/Square512x512Logo.png"
+        "icons/Square512x512Logo.png",
+        "icons/icon.ico"
       ],
       "identifier": "io.earthtraveller1.neng-pass",
       "longDescription": "",
