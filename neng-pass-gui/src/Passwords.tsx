@@ -34,10 +34,10 @@ export default function Passwords() {
 
         <For each={passwords()!}>
             {(password) => {
-                return <p class={
-                    "my-1 pl-8 py-2 border-y-2 border-neutral-500 select-none " + 
+                return <button class={
+                    "my-1 pl-8 py-2 border-y-2 border-neutral-500 select-none w-full text-left " + 
                     "duration-150 hover:border-y-4 hover:bg-neutral-700 active:border-neutral-300 hover:bg-neutral-600"
-                }>{password}</p>
+                }>{password}</button>
             }}
         </For>
     </>)
