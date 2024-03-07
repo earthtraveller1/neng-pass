@@ -14,8 +14,59 @@ I only know to download and install applications. SO WHY THE FUCK IS THERE CODE?
 
 === Here's the EXE
 
-Therefore, I have been kind enough to provide you, the non-programmers who happens to on GitHub for some reasons, the EXE file.
+For some reasons, I have been kind enough to provide you, the non-programmers who happens to on GitHub for some reasons, the EXE file.
 
 https://github.com/earthtraveller1/neng-pass/releases/download/1.0/neng-pass-gui.exe[neng-pass-gui.exe]
 
-Please appreciate this grand act of kindness, as you will likely not see it from other developers on this wicked site.
+Please appreciate this grand act of kindness, as you will likely not see it from other developers on this cringe site.
+
+Anyways, for those of you who are actually programmers, here's some instructions to build from source.
+
+== Building from Source
+
+Ensure that you have the following installed:
+
+- https://www.rust-lang.org/tools/install[Rust]
+- https://nodejs.org/en/download/ [Node.js] (or any of the alternative JavaScript runtimes, like Deno, Bun, or whatever is out here these days).
+- Dependencies of the Tauri framework for your specific operating system. Check this list https://tauri.app/v1/guides/getting-started/prerequisites/[here].
+
+First, clone the repository:
+
+[source,bash]
+----
+git clone https://github.com/earthtraveller1/neng-pass.git
+----
+
+From there, you can run the project:
+
+[source,bash]
+----
+cd neng-pass
+cargo run --release
+----
+
+=== Building the GUI
+
+First, you need to install the dependencies for the frontend. This is assuming that you are using NPM.
+
+[source,bash]
+----
+cd neng-pass/neng-pass-gui
+npm install
+----
+
+For the next step, you will need the Tauri CLI tool. If you have cargo installed, you can run:
+
+[source,bash]
+----
+cargo install tauri-cli
+----
+
+After that's done, you can simply run:
+
+[source,bash]
+----
+cargo tauri dev
+----
+
+To run the application. It will be in debug mode, so it might be a bit slow, but it should work.
