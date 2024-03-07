@@ -1,3 +1,20 @@
 = Neng Password Manager
 
 A basic password manager written in Rust. Supports two modes of interacting with it: through the command line (`neng-pass` binary crate), or through a GUI (the `neng-pass-gui` crate), built with Tauri.
+
+== Where's the EXE???
+
+As a wise man once said,
+
+[quote, u/automatic_purpose_]
+---
+I DONT GIVE A FUCK ABOUT THE FUCKING CODE! i just want to download this stupid fucking application and use it https://github.com/sherlock-project/sherlock#installation
+
+WHY IS THERE CODE??? MAKE A FUCKING .EXE FILE AND GIVE IT TO ME. these dumbfucks think that everyone is a developer and understands code. well i am not and i don't understand it. I only know to download and install applications. SO WHY THE FUCK IS THERE CODE? make an EXE file and give it to me. STUPID FUCKING SMELLY NERDS
+---
+
+Therefore, I have been kind enough to provide you, the non-programmers who happens to on GitHub for some reasons, the EXE file.
+
+https://github.com/earthtraveller1/neng-pass/releases/download/1.0/neng-pass-gui.exe[neng-pass-gui.exe]
+
+Please appreciate this grand act of kindness, as you will likely not see it from other developers on this wicked site.
