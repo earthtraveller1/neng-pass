@@ -1,6 +1,6 @@
 import { For, createResource, useContext } from "solid-js"
 import { invoke } from "@tauri-apps/api"
-import { PageContext } from "./Index"
+import { PageContext, PasswordContext } from "./Index"
 import { Page } from "./common"
 
 export default function Passwords() {
@@ -13,8 +13,13 @@ export default function Passwords() {
         throw Error("The page context has not been set! What the actual fuck?")
     }
 
+    const passwordContext = useContext(PasswordContext)
+    if (passwordContext == undefined) {
+        throw Error("The password context has not been set! What the actual fuck?")
+    }
+
     return (<>
-        <div class="flex flex-row">
+        <div class="flex flex-row sticky top-0 bg-neutral-800">
             <h1 class="text-4xl text-left ml-8 my-10 font-bold w-fit">Your Passwords</h1>
             <button 
                 class={
@@ -34,7 +39,13 @@ export default function Passwords() {
 
         <For each={passwords()!}>
             {(password) => {
-                return <p class="my-1 pl-8 py-2 border-y-2 border-neutral-500">{password}</p>
+                return <button class={
+                    "my-1 pl-8 py-2 border-y-2 border-neutral-500 select-none w-full text-left " + 
+                    "duration-150 hover:border-y-4 hover:bg-neutral-700 active:border-neutral-300 hover:bg-neutral-600"
+                } onClick={() => {
+                    passwordContext.setPassword(password)
+                    pageContext.setPage(Page.Password)
+                }}>{password}</button>
             }}
         </For>
     </>)

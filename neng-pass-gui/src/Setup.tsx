@@ -1,5 +1,5 @@
 import TextInputField from "./components/TextInputField"
-import Button from "./components/Button"
+import Button, { ButtonStyle } from "./components/Button"
 import { createSignal, useContext } from "solid-js"
 import ErrorBox from "./components/ErrorBox"
 import { invoke } from "@tauri-apps/api"
@@ -28,7 +28,7 @@ export default function Setup() {
             setConfirmMasterKey(event.target.value.trim())
         }} />
 
-        <Button label="Continue" onClick={async () => {
+        <Button label="Continue" style={ButtonStyle.Green} onClick={async () => {
             if (getNewMasterKey() != getConfirmMasterKey()) {
                 setErrorBoxHeightClass("max-h-auto p-2 mb-6")
             } else {
