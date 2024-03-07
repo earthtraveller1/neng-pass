@@ -11,7 +11,7 @@ https://github.com/sherlock-project/sherlock#installation WHY IS THERE CODE??? M
 these dumbfucks think that everyone is a developer and understands code. well i am not and i don't understand it. 
 I only know to download and install applications. SO WHY THE FUCK IS THERE CODE? make an EXE file and give it to me. STUPID FUCKING SMELLY NERDS"
 -- u/automatic_purpose_
-+
+ +
 
 Therefore, I have been kind enough to provide you, the non-programmers who happens to on GitHub for some reasons, the EXE file.
 
