@@ -6,7 +6,7 @@ A basic password manager written in Rust. Supports two modes of interacting with
 
 As a wise man once said,
 
-[quote, u/automatic_purpose_]
+[quote,u/automatic_purpose_]
 ----
 I DONT GIVE A FUCK ABOUT THE FUCKING CODE! i just want to download this stupid fucking application and use it https://github.com/sherlock-project/sherlock#installation
 
