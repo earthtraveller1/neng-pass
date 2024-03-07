@@ -12,6 +12,7 @@ these dumbfucks think that everyone is a developer and understands code. well i 
 I only know to download and install applications. SO WHY THE FUCK IS THERE CODE? make an EXE file and give it to me. STUPID FUCKING SMELLY NERDS"
 -- u/automatic_purpose_
 
+
 Therefore, I have been kind enough to provide you, the non-programmers who happens to on GitHub for some reasons, the EXE file.
 
 https://github.com/earthtraveller1/neng-pass/releases/download/1.0/neng-pass-gui.exe[neng-pass-gui.exe]
