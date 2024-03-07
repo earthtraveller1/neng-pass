@@ -37,7 +37,7 @@ First, clone the repository:
 git clone https://github.com/earthtraveller1/neng-pass.git
 ----
 
-From there, you can run the project:
+From there, you can run the the CLI tool:
 
 [source,bash]
 ----
