@@ -12,6 +12,7 @@ export default function NewPassword() {
 
     const pageContext = useContext(PageContext)
     const [getErrorMessageHeight, setErrorMessageHeight] = createSignal("max-h-0")
+    const [getErrorMessage, setErrorMessage] = createSignal("")
 
     if (pageContext == undefined) {
         throw new Error("Page context was not provided")
@@ -19,12 +20,21 @@ export default function NewPassword() {
 
     async function saveThePassword() {
         try {
+            if (getNewPasswordName() == "") {
+                throw "You cannot create a password without a name"
+            }
+
+            if (getNewPassword() == "") {
+                throw "You did not enter a password"
+            }
+
             await invoke("save_password", { pName: getNewPasswordName(), pPassword: getNewPassword() })
             if (pageContext != undefined) {
                 pageContext.setPage(Page.Passwords)
             }
         } catch (error) {
             setErrorMessageHeight("max-h-auto p-2 mb-6")
+            setErrorMessage(error as string)
         }
     }
 
@@ -32,7 +42,7 @@ export default function NewPassword() {
         <h1 class="text-4xl py-4 mb-8 select-none">Create a new Password</h1>
 
         <ErrorBox heightClass={getErrorMessageHeight()}>
-            Password is too long (max length is 16 characters)
+            {getErrorMessage()}
         </ErrorBox>
 
         <TextInputField type="text" label="Name" onInput={(event) => {
