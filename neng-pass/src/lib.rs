@@ -170,13 +170,17 @@ pub fn create_password(
         return Err(Error::PasswordAlreadyExists);
     }
 
+    if p_password.len() > MAX_PASSWORD_LEN {
+        return Err(Error::PasswordTooLong);
+    }
+
     // Pad the master key
 
     while p_master_key.len() < MAX_MASTER_KEY_LEN {
         p_master_key.push(' ');
     }
 
-    let encrypted_password = crypto::encrypt(p_master_key.as_bytes(), p_password.as_bytes());
+    let encrypted_password = crypto::encrypt(p_master_key.as_bytes(), &p_password.as_bytes());
 
     let sql_query = "INSERT INTO passwords VALUES (?, ?)";
 
