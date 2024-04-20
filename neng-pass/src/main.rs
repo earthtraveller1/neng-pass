@@ -101,19 +101,26 @@ fn main() {
             let master_key = ask_for_password(&master_key_path);
             let name = sub_matches.get_one::<String>("NAME").unwrap();
 
-            if let Err(err) = neng_pass::create_password(master_key, &name, std::str::from_utf8(&neng_pass::generate_password()).unwrap(), &sql_connection) {
+            if let Err(err) = neng_pass::create_password(
+                master_key,
+                &name,
+                std::str::from_utf8(&neng_pass::generate_password()).unwrap(),
+                &sql_connection,
+            ) {
                 eprintln!("[ERROR]: {}", err.get_message());
                 std::process::exit(1);
             }
 
             eprintln!("Created and saved password named '{}'", name);
         }
-        Some(( "save", sub_matches )) => {
+        Some(("save", sub_matches)) => {
             let master_key = ask_for_password(&master_key_path);
             let name = sub_matches.get_one::<String>("NAME").unwrap();
             let password = rpassword::prompt_password("Enter the password to save: ").unwrap();
 
-            if let Err(err) = neng_pass::create_password(master_key, name, &password, &sql_connection) {
+            if let Err(err) =
+                neng_pass::create_password(master_key, name, &password, &sql_connection)
+            {
                 eprintln!("[ERROR]: {}", err.get_message());
                 std::process::exit(1);
             }
