@@ -18,7 +18,6 @@ fn cli() -> Command {
             Command::new("save")
                 .about("Saves a new password with the specified name and value.")
                 .arg(arg!(<NAME> "The name to assign to the password."))
-                .arg(arg!(<PASSWORD> "The value to assign to the password.")),
         )
         .subcommand(
             Command::new("get")
@@ -112,9 +111,9 @@ fn main() {
         Some(( "save", sub_matches )) => {
             let master_key = ask_for_password(&master_key_path);
             let name = sub_matches.get_one::<String>("NAME").unwrap();
-            let password = sub_matches.get_one::<String>("PASSWORD").unwrap();
+            let password = rpassword::prompt_password("Enter the password to save: ").unwrap();
 
-            if let Err(err) = neng_pass::create_password(master_key, name, password, &sql_connection) {
+            if let Err(err) = neng_pass::create_password(master_key, name, &password, &sql_connection) {
                 eprintln!("[ERROR]: {}", err.get_message());
                 std::process::exit(1);
             }
