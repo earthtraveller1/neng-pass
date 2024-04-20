@@ -89,6 +89,15 @@ fn create_password(
     p_state: tauri::State<'_, State>,
     p_name: &str,
 ) -> Result<(), String> {
+    save_password(p_state, p_name, std::str::from_utf8(&neng_pass::generate_password()).unwrap())
+}
+
+#[tauri::command]
+fn save_password(
+    p_state: tauri::State<'_, State>,
+    p_name: &str,
+    p_password: &str,
+) -> Result<(), String> {
     let sql_connection = open_and_prepare_database(&p_state.static_state.data_dir)?;
     let internal_state = p_state.internal_state.lock().unwrap();
 
@@ -97,7 +106,7 @@ fn create_password(
         None => return Err("The master has not been set yet!".to_string())
     };
 
-    match neng_pass::create_password(master_key.clone(), p_name, &sql_connection) {
+    match neng_pass::create_password(master_key.clone(), p_name, p_password, &sql_connection) {
         Ok(_) => Ok(()),
         Err(err) => Err(err.get_message()),
     }
