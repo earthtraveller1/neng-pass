@@ -12,7 +12,7 @@ fn cli() -> Command {
         .subcommand(
             Command::new("new")
                 .about("Creates a new password with the specified name.")
-                .arg(arg!(<NAME> "The you want to assign to the password.")),
+                .arg(arg!(<NAME> "The name that you want to assign to the password.")),
         )
         .subcommand(
             Command::new("save")
