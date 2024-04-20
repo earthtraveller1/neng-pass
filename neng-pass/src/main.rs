@@ -101,9 +101,8 @@ fn main() {
         Some(("new", sub_matches)) => {
             let master_key = ask_for_password(&master_key_path);
             let name = sub_matches.get_one::<String>("NAME").unwrap();
-            let password = sub_matches.get_one::<String>("PASSWORD").unwrap();
 
-            if let Err(err) = neng_pass::create_password(master_key, &name, password, &sql_connection) {
+            if let Err(err) = neng_pass::create_password(master_key, &name, std::str::from_utf8(&neng_pass::generate_password()).unwrap(), &sql_connection) {
                 eprintln!("[ERROR]: {}", err.get_message());
                 std::process::exit(1);
             }
