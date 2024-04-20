@@ -47,12 +47,14 @@ export default function NewPassword() {
 
         <TextInputField type="text" label="Name" onInput={(event) => {
             setNewPasswordName(event.target.value)
+            setErrorMessageHeight("max-h-0")
         }} onEnterKey={async () => {
             await saveThePassword()
         }}/>
 
         <TextInputField type="password" label="Password" onInput={(event) => {
             setNewPassword(event.target.value)
+            setErrorMessageHeight("max-h-0")
         }} onEnterKey={async () => {
             await saveThePassword()
         }}/>
