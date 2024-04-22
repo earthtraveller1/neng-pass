@@ -13,6 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.em
 
 import java.io.File
@@ -55,6 +56,29 @@ class LoginActivity : ComponentActivity() {
         }
     }
 
+    @Composable
+    fun Login() {
+        val (passwordValue, setPasswordValue) = remember { mutableStateOf("") }
+
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text("Login", fontSize = 6.em)
+            TextField(
+                value = passwordValue,
+                label = { Text("Password") },
+                visualTransformation = PasswordVisualTransformation(),
+                onValueChange = { setPasswordValue(it) }
+            )
+
+            Button(
+                onClick = {
+                    /* TODO: Login */
+                }
+            ) {
+                Text("Login")
+            }
+        }
+    }
+
     fun isMasterKeySet(): Boolean {
         val masterKeyFile = File("${applicationInfo.dataDir}/master_key")
         return masterKeyFile.exists()
@@ -71,7 +95,7 @@ class LoginActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     if (isMasterKeySet()) {
-                        /* TODO: Login */
+                        Login()
                     } else {
                         SetMasterKey()
                     }
