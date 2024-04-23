@@ -1,5 +1,6 @@
 package io.github.earthtraveller1.nengpass
 
+import android.app.Dialog
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -15,6 +16,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.em
+import androidx.compose.ui.window.Dialog
 
 import java.io.File
 
@@ -25,8 +27,17 @@ class LoginActivity : ComponentActivity() {
     fun SetMasterKey(modifier: Modifier = Modifier) {
         val (passwordValue, setPasswordValue) = remember { mutableStateOf("") }
         val (confirmPasswordValue, setConfirmPasswordValue) = remember { mutableStateOf("") }
+        val (passwordNoMatchDialog, setPasswordNoMatchDialog) = remember { mutableStateOf(false) }
 
         Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = modifier) {
+            if (passwordNoMatchDialog) {
+                Dialog(
+                    onDismissRequest = { setPasswordNoMatchDialog(false) }
+                ) {
+                    Text("The passwords that you provided did not match.")
+                }
+            }
+
             Text("Set your master key", fontSize = 6.em, modifier = modifier)
             Text("You have not yet set a master key", modifier = modifier)
 
@@ -48,7 +59,10 @@ class LoginActivity : ComponentActivity() {
 
             Button(
                 onClick = {
-                    /* TODO: Set master key */
+                    if (passwordValue == confirmPasswordValue) {
+                    } else {
+                        setPasswordNoMatchDialog(true)
+                    }
                 }
             ) {
                 Text("Ok")
