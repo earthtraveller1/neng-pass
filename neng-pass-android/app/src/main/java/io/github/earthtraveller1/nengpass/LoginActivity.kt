@@ -60,6 +60,7 @@ class LoginActivity : ComponentActivity() {
             Button(
                 onClick = {
                     if (passwordValue == confirmPasswordValue) {
+                        NengPass.setMasterKey("${applicationInfo.dataDir}/master_key", passwordValue)
                     } else {
                         setPasswordNoMatchDialog(true)
                     }
