@@ -18,11 +18,11 @@ pub fn hash(p_input: &str) -> argon2::password_hash::Result<Vec<u8>> {
 
 pub fn encrypt(p_key: &[u8], p_data: &[u8]) -> [u8; MAX_PASSWORD_LEN] {
     let mut key = [0u8; MAX_MASTER_KEY_LEN];
-    key.copy_from_slice(p_key);
+    p_key.iter().enumerate().for_each(|(i, v)| key[i] = *v);
     let key_block = GenericArray::from(key);
 
     let mut data = [0u8; MAX_PASSWORD_LEN];
-    data.copy_from_slice(p_data);
+    p_data.iter().enumerate().for_each(|(i, v)| data[i] = *v);
     let mut data_block = GenericArray::from(data);
 
     let cipher = aes::Aes256::new(&key_block);

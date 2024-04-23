@@ -26,6 +26,7 @@ pub enum Error {
     MasterKeyAlreadyExists,
     PasswordAlreadyExists,
     PasswordDoesntExist(Box<str>),
+    PasswordTooLong,
     UnknownError,
 }
 
@@ -64,6 +65,9 @@ impl Error {
             Error::PasswordDoesntExist(name) => {
                 format!("There appears to be no password saved that is named {}", name)
             },
+            Error::PasswordTooLong => {
+                format!("Your password is too long! Passwords can only be up to {} characters long.", MAX_PASSWORD_LEN)
+            }
             Error::UnknownError => {
                 "Sorry, but something went wrong.".to_string()
             }
@@ -141,9 +145,22 @@ pub fn query_master_key(
     Ok(p_inputted_password.to_string())
 }
 
+pub fn generate_password() -> [u8; MAX_PASSWORD_LEN] {
+    let mut password_generator = ChaCha20Rng::from_entropy();
+
+    let mut password = [0u8; MAX_PASSWORD_LEN];
+
+    password.iter_mut().for_each(|c| {
+        *c = password_generator.gen_range(33..127);
+    });
+
+    password
+}
+
 pub fn create_password(
     mut p_master_key: String,
     p_name: &str,
+    p_password: &str,
     p_sql_connection: &sqlite::Connection,
 ) -> Result<(), Error> {
     let mut sql_statement =
@@ -154,16 +171,9 @@ pub fn create_password(
         return Err(Error::PasswordAlreadyExists);
     }
 
-    let generated_password = {
-        let mut random_generator = ChaCha20Rng::from_entropy();
-        let mut password = [0u8; MAX_PASSWORD_LEN];
-
-        password.iter_mut().for_each(|c| {
-            *c = random_generator.gen_range(33..127);
-        });
-
-        password
-    };
+    if p_password.len() > MAX_PASSWORD_LEN {
+        return Err(Error::PasswordTooLong);
+    }
 
     // Pad the master key
 
@@ -171,7 +181,7 @@ pub fn create_password(
         p_master_key.push(' ');
     }
 
-    let encrypted_password = crypto::encrypt(p_master_key.as_bytes(), &generated_password);
+    let encrypted_password = crypto::encrypt(p_master_key.as_bytes(), &p_password.as_bytes());
 
     let sql_query = "INSERT INTO passwords VALUES (?, ?)";
 

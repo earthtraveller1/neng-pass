@@ -12,7 +12,12 @@ fn cli() -> Command {
         .subcommand(
             Command::new("new")
                 .about("Creates a new password with the specified name.")
-                .arg(arg!(<NAME> "The you want to assign to the password.")),
+                .arg(arg!(<NAME> "The name that you want to assign to the password.")),
+        )
+        .subcommand(
+            Command::new("save")
+                .about("Saves a new password with the specified name and value.")
+                .arg(arg!(<NAME> "The name to assign to the password."))
         )
         .subcommand(
             Command::new("get")
@@ -95,12 +100,30 @@ fn main() {
         Some(("new", sub_matches)) => {
             let master_key = ask_for_password(&master_key_path);
             let name = sub_matches.get_one::<String>("NAME").unwrap();
-            if let Err(err) = neng_pass::create_password(master_key, &name, &sql_connection) {
+
+            if let Err(err) = neng_pass::create_password(
+                master_key,
+                &name,
+                std::str::from_utf8(&neng_pass::generate_password()).unwrap(),
+                &sql_connection,
+            ) {
                 eprintln!("[ERROR]: {}", err.get_message());
                 std::process::exit(1);
             }
 
             eprintln!("Created and saved password named '{}'", name);
+        }
+        Some(("save", sub_matches)) => {
+            let master_key = ask_for_password(&master_key_path);
+            let name = sub_matches.get_one::<String>("NAME").unwrap();
+            let password = rpassword::prompt_password("Enter the password to save: ").unwrap();
+
+            if let Err(err) =
+                neng_pass::create_password(master_key, name, &password, &sql_connection)
+            {
+                eprintln!("[ERROR]: {}", err.get_message());
+                std::process::exit(1);
+            }
         }
         Some(("get", sub_matches)) => {
             let master_key = ask_for_password(&master_key_path);

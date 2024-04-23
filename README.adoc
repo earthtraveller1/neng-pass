@@ -76,7 +76,7 @@ To run the application. It will be in debug mode, so it might be a bit slow, but
 Basic, quick reference for the CLI tool. I won't go into too much detail, you can utilize the help command to learn more about the options within each subcommand.
 
 ----
-❯ ./neng-pass --help
+❯ target/release/neng-pass.exe --help
 Basic password manager written in Rust (btw)
 
 Usage: neng-pass <COMMAND>
@@ -84,6 +84,7 @@ Usage: neng-pass <COMMAND>
 Commands:
   set-master  Sets the master key
   new         Creates a new password with the specified name.
+  save        Saves a new password with the specified name and value.
   get         Gets the value of a specific password.
   list        Gets a list of all the passwords that you have saved right now.
   delete      Deletes a specific password from your password list. Remember that this is not reversible!!!!
