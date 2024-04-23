@@ -15,6 +15,7 @@ use std::io::Error as IOError;
 pub const MAX_MASTER_KEY_LEN: usize = 32;
 pub const MAX_PASSWORD_LEN: usize = 16;
 
+#[derive(Debug)]
 pub enum Error {
     HashError(Argon2Error),
     DatabaseError(SqliteError),
