@@ -6,6 +6,8 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
@@ -13,8 +15,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.window.Dialog
 
@@ -38,15 +42,19 @@ class LoginActivity : ComponentActivity() {
                 }
             }
 
-            Text("Set your master key", fontSize = 6.em, modifier = modifier)
-            Text("You have not yet set a master key", modifier = modifier)
+            Text("Set your master key", fontSize = 6.em, modifier = modifier.padding(top = 24.dp))
+            Text("You have not yet set a master key", modifier = modifier.padding(bottom = 48.dp, top = 8.dp))
 
             TextField(
                 value = passwordValue,
                 label = { Text("Password") },
                 visualTransformation = PasswordVisualTransformation(),
                 onValueChange = { setPasswordValue(it) },
-                modifier = modifier
+                keyboardOptions = KeyboardOptions(
+                    capitalization = KeyboardCapitalization.None,
+                    autoCorrect =  false,
+                ),
+                modifier = modifier.padding(vertical = 24.dp)
             )
 
             TextField(
@@ -54,7 +62,7 @@ class LoginActivity : ComponentActivity() {
                 label = { Text("Confirm Password") },
                 visualTransformation = PasswordVisualTransformation(),
                 onValueChange = { setConfirmPasswordValue(it) },
-                modifier = modifier
+                modifier = modifier.padding(bottom = 24.dp)
             )
 
             Button(
