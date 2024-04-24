@@ -7,6 +7,8 @@ interface NengPass {
         }
 
         external fun setMasterKey(file: String, newMasterKey: String)
+
+        external fun isMasterKeyCorrect(file: String, masterKey: String): Boolean
     }
 }
 
