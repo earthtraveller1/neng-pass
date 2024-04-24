@@ -1,5 +1,6 @@
 package io.github.earthtraveller1.nengpass
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -64,6 +65,9 @@ class LoginActivity : ComponentActivity() {
                 onClick = {
                     if (passwordValue == confirmPasswordValue) {
                         NengPass.setMasterKey("${applicationInfo.dataDir}/master_key", passwordValue)
+
+                        val intent = Intent(applicationContext, PasswordListActivity::class.java)
+                        startActivity(intent)
                     } else {
                         setPasswordNoMatchDialog(true)
                     }
@@ -99,7 +103,8 @@ class LoginActivity : ComponentActivity() {
             Button(
                 onClick = {
                     if (NengPass.isMasterKeyCorrect("${applicationInfo.dataDir}/master_key", passwordValue)) {
-                        /* TODO: Actually log into the password list */
+                        val intent = Intent(applicationContext, PasswordListActivity::class.java)
+                        startActivity(intent)
                     } else {
                         setPasswordIncorrectDialog(true)
                     }
