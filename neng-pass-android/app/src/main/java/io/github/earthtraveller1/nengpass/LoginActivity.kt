@@ -1,6 +1,5 @@
 package io.github.earthtraveller1.nengpass
 
-import android.app.Dialog
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -14,17 +13,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.window.Dialog
-
-import java.io.File
-
 import io.github.earthtraveller1.nengpass.ui.theme.NengPassTheme
+import java.io.File
 
 class LoginActivity : ComponentActivity() {
     @Composable
@@ -52,7 +47,7 @@ class LoginActivity : ComponentActivity() {
                 onValueChange = { setPasswordValue(it) },
                 keyboardOptions = KeyboardOptions(
                     capitalization = KeyboardCapitalization.None,
-                    autoCorrect =  false,
+                    autoCorrect = false,
                 ),
                 modifier = modifier.padding(vertical = 24.dp)
             )
