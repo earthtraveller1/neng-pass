@@ -77,8 +77,17 @@ class LoginActivity : ComponentActivity() {
     @Composable
     fun Login() {
         val (passwordValue, setPasswordValue) = remember { mutableStateOf("") }
+        val (passwordIncorrectDialog, setPasswordIncorrectDialog) = remember { mutableStateOf(false) }
 
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            if (passwordIncorrectDialog) {
+                Dialog (
+                    onDismissRequest = { setPasswordIncorrectDialog(false) }
+                ) {
+                    Text("Sorry, but the password is incorrect.")
+                }
+            }
+
             Text("Login", fontSize = 6.em)
             TextField(
                 value = passwordValue,
@@ -89,7 +98,11 @@ class LoginActivity : ComponentActivity() {
 
             Button(
                 onClick = {
-                    /* TODO: Login */
+                    if (NengPass.isMasterKeyCorrect("${applicationInfo.dataDir}/master_key", passwordValue)) {
+                        /* TODO: Actually log into the password list */
+                    } else {
+                        setPasswordIncorrectDialog(true)
+                    }
                 }
             ) {
                 Text("Login")
