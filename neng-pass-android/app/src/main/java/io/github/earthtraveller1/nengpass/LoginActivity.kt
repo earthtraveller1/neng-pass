@@ -80,7 +80,7 @@ class LoginActivity : ComponentActivity() {
     }
 
     @Composable
-    fun Login() {
+    fun Login(modifier: Modifier = Modifier) {
         val (passwordValue, setPasswordValue) = remember { mutableStateOf("") }
         val (passwordIncorrectDialog, setPasswordIncorrectDialog) = remember { mutableStateOf(false) }
 
@@ -93,12 +93,13 @@ class LoginActivity : ComponentActivity() {
                 }
             }
 
-            Text("Login", fontSize = 6.em)
+            Text("Login", fontSize = 6.em, modifier = modifier.padding(bottom = 32.dp, top = 16.dp))
             TextField(
                 value = passwordValue,
                 label = { Text("Password") },
                 visualTransformation = PasswordVisualTransformation(),
-                onValueChange = { setPasswordValue(it) }
+                onValueChange = { setPasswordValue(it) },
+                modifier = modifier.padding(bottom = 32.dp, top = 16.dp)
             )
 
             Button(
