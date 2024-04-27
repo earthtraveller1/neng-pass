@@ -12,6 +12,8 @@ use rand_chacha::ChaCha20Rng;
 use sqlite::Error as SqliteError;
 use std::io::Error as IOError;
 
+pub use sqlite;
+
 pub const MAX_MASTER_KEY_LEN: usize = 32;
 pub const MAX_PASSWORD_LEN: usize = 16;
 
