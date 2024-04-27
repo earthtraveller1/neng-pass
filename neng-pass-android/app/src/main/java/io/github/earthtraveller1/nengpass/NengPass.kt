@@ -9,6 +9,12 @@ interface NengPass {
         external fun setMasterKey(file: String, newMasterKey: String)
 
         external fun isMasterKeyCorrect(file: String, masterKey: String): Boolean
+
+        external fun getPasswordList(databaseFile: String): Array<String>
+
+        external fun generatePassword(): String
+
+        external fun savePassword(databaseFile: String, masterKey: String, name: String, password: String)
     }
 }
 
