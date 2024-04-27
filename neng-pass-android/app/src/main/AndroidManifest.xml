@@ -27,10 +27,6 @@
                 android:exported="false"
                 android:label="Password List"
                 android:theme="@style/Theme.NengPass">
-            <intent-filter>
-                <action android:name="android.intent.action.RUN"/>
-                <category android:name="android.intent.category.DEFAULT"/>
-            </intent-filter>
         </activity>
     </application>
 
