@@ -6,11 +6,15 @@ import androidx.activity.compose.setContent
 import androidx.compose.material3.Text
 
 class PasswordListActivity: ComponentActivity() {
+    private var masterKey: String = ""
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        masterKey = intent.extras!!.getString("masterKey")!!
+
         setContent {
-            Text("Placeholder")
+            Text("The master key appears to be $masterKey")
         }
     }
 }

@@ -66,7 +66,8 @@ class LoginActivity : ComponentActivity() {
                     if (passwordValue == confirmPasswordValue) {
                         NengPass.setMasterKey("${applicationInfo.dataDir}/master_key", passwordValue)
 
-                        val intent = Intent(applicationContext, PasswordListActivity::class.java)
+                        var intent = Intent(applicationContext, PasswordListActivity::class.java)
+                        intent.putExtra("masterKey", passwordValue)
                         startActivity(intent)
                     } else {
                         setPasswordNoMatchDialog(true)
@@ -103,7 +104,8 @@ class LoginActivity : ComponentActivity() {
             Button(
                 onClick = {
                     if (NengPass.isMasterKeyCorrect("${applicationInfo.dataDir}/master_key", passwordValue)) {
-                        val intent = Intent(applicationContext, PasswordListActivity::class.java)
+                        var intent = Intent(applicationContext, PasswordListActivity::class.java)
+                        intent.putExtra("masterKey", passwordValue)
                         startActivity(intent)
                     } else {
                         setPasswordIncorrectDialog(true)
