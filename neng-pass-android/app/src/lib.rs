@@ -3,6 +3,9 @@ use jni::{
     sys::{jarray, jboolean, jstring},
     JNIEnv,
 };
+
+use neng_pass::sqlite;
+
 use std::path::PathBuf;
 
 fn open_and_prepare_database(data_dir: &PathBuf) -> Result<sqlite::Connection, String> {
@@ -121,4 +124,46 @@ pub extern "system" fn Java_io_github_earthtraveller1_nengpass_NengPass_00024Com
         .unwrap()
         .to_string();
     env.new_string(password).unwrap().as_raw()
+}
+
+#[no_mangle]
+pub extern "system" fn Java_io_github_earthtraveller1_nengpass_NengPass_00024Companion_savePassword(
+    mut env: JNIEnv,
+    _p_class: JClass,
+    p_database_file: JString,
+    p_master_key: JString,
+    p_name: JString,
+    p_password: JString,
+) {
+    let database_file = env
+        .get_string(&p_database_file)
+        .unwrap()
+        .to_str()
+        .unwrap()
+        .to_string();
+
+    let database = open_and_prepare_database(&PathBuf::from(database_file)).unwrap();
+
+    let master_key = env
+        .get_string(&p_master_key)
+        .unwrap()
+        .to_str()
+        .unwrap()
+        .to_string();
+
+    let name = env
+        .get_string(&p_name)
+        .unwrap()
+        .to_str()
+        .unwrap()
+        .to_string();
+
+    let password = env
+        .get_string(&p_password)
+        .unwrap()
+        .to_str()
+        .unwrap()
+        .to_string();
+
+    neng_pass::create_password(master_key, &name, &password, &database).unwrap();
 }
