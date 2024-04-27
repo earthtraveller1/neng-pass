@@ -15,6 +15,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
@@ -47,8 +48,9 @@ class LoginActivity : ComponentActivity() {
                 visualTransformation = PasswordVisualTransformation(),
                 onValueChange = { setPasswordValue(it) },
                 keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Password,
                     capitalization = KeyboardCapitalization.None,
-                    autoCorrect = false,
+                    autoCorrect = false
                 ),
                 modifier = modifier.padding(vertical = 24.dp)
             )
@@ -57,6 +59,11 @@ class LoginActivity : ComponentActivity() {
                 value = confirmPasswordValue,
                 label = { Text("Confirm Password") },
                 visualTransformation = PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Password,
+                    capitalization = KeyboardCapitalization.None,
+                    autoCorrect = false
+                ),
                 onValueChange = { setConfirmPasswordValue(it) },
                 modifier = modifier.padding(bottom = 24.dp)
             )
@@ -98,6 +105,11 @@ class LoginActivity : ComponentActivity() {
                 value = passwordValue,
                 label = { Text("Password") },
                 visualTransformation = PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Password,
+                    capitalization = KeyboardCapitalization.None,
+                    autoCorrect = false
+                ),
                 onValueChange = { setPasswordValue(it) },
                 modifier = modifier.padding(bottom = 32.dp, top = 16.dp)
             )
