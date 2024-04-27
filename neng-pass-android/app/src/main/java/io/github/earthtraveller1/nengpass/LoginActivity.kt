@@ -66,7 +66,7 @@ class LoginActivity : ComponentActivity() {
                     if (passwordValue == confirmPasswordValue) {
                         NengPass.setMasterKey("${applicationInfo.dataDir}/master_key", passwordValue)
 
-                        var intent = Intent(applicationContext, PasswordListActivity::class.java)
+                        val intent = Intent(applicationContext, PasswordListActivity::class.java)
                         intent.putExtra("masterKey", passwordValue)
                         startActivity(intent)
                     } else {
@@ -105,7 +105,7 @@ class LoginActivity : ComponentActivity() {
             Button(
                 onClick = {
                     if (NengPass.isMasterKeyCorrect("${applicationInfo.dataDir}/master_key", passwordValue)) {
-                        var intent = Intent(applicationContext, PasswordListActivity::class.java)
+                        val intent = Intent(applicationContext, PasswordListActivity::class.java)
                         intent.putExtra("masterKey", passwordValue)
                         startActivity(intent)
                     } else {
@@ -118,7 +118,7 @@ class LoginActivity : ComponentActivity() {
         }
     }
 
-    fun isMasterKeySet(): Boolean {
+    private fun isMasterKeySet(): Boolean {
         val masterKeyFile = File("${applicationInfo.dataDir}/master_key")
         return masterKeyFile.exists()
     }
