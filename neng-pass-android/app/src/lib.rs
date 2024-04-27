@@ -1,6 +1,6 @@
 use jni::{
     objects::{JClass, JString},
-    sys::{jarray, jboolean},
+    sys::{jarray, jboolean, jstring},
     JNIEnv,
 };
 use std::path::PathBuf;
@@ -105,8 +105,20 @@ pub extern "system" fn Java_io_github_earthtraveller1_nengpass_NengPass_00024Com
             &mut passwords,
             i.try_into().unwrap(),
             env.new_string(name).unwrap(),
-        ).unwrap();
+        )
+        .unwrap();
     }
 
     passwords.as_raw()
+}
+
+#[no_mangle]
+pub extern "system" fn Java_io_github_earthtraveller1_nengpass_NengPass_00024Companion_generatePassword(
+    env: JNIEnv,
+    _p_class: JClass,
+) -> jstring {
+    let password = std::str::from_utf8(&neng_pass::generate_password())
+        .unwrap()
+        .to_string();
+    env.new_string(password).unwrap().as_raw()
 }
