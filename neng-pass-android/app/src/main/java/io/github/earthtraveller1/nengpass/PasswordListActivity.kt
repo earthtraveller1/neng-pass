@@ -91,8 +91,8 @@ class PasswordListActivity : ComponentActivity() {
     @Preview
     @Composable
     private fun MainContent(modifier: Modifier = Modifier) {
-        val databaseHelper = PasswordsOpenHelper(applicationContext)
-        val database = databaseHelper.writableDatabase
+        val passwordListValue = NengPass.getPasswordList("${applicationContext.dataDir.canonicalPath}/databases")
+        val (passwordList, setPasswordList) = remember { mutableStateOf(passwordListValue) }
 
         NengPassTheme {
             Scaffold(
@@ -110,11 +110,9 @@ class PasswordListActivity : ComponentActivity() {
                     Column(
                         modifier = modifier.verticalScroll(rememberScrollState()),
                     ) {
-                        val cursor = database.rawQuery("SELECT name FROM passwords", arrayOf())
-                        while (cursor.moveToNext()) {
-                            PasswordEntry(modifier = modifier, name = cursor.getString(0))
+                        for (password in passwordList) {
+                            PasswordEntry(modifier = modifier, name = password)
                         }
-                        cursor.close()
                     }
                 }
             }
