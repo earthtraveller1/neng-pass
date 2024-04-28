@@ -2,6 +2,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use std::{fs::File, path::PathBuf, sync::Mutex};
+use neng_pass::rusqlite;
 
 use directories::ProjectDirs;
 
@@ -35,14 +36,14 @@ impl State {
     }
 }
 
-fn open_and_prepare_database(data_dir: &PathBuf) -> Result<sqlite::Connection, String> {
-    let sql_connection = match sqlite::open(data_dir.join("passwords.db")) {
+fn open_and_prepare_database(data_dir: &PathBuf) -> Result<rusqlite::Connection, String> {
+    let sql_connection = match rusqlite::Connection::open(data_dir.join("passwords.db")) {
         Ok(connection) => connection,
         Err(err) => return Err(format!("Failed to open the database: {}", err)),
     };
 
     if let Err(err) =
-        sql_connection.execute("CREATE TABLE IF NOT EXISTS passwords (name TEXT, password BLOB);")
+        sql_connection.execute("CREATE TABLE IF NOT EXISTS passwords (name TEXT, password BLOB);", ())
     {
         return Err(format!(
             "Failed to prepare the table in the database: {}",
@@ -68,17 +69,19 @@ fn get_password_list(p_state: tauri::State<'_, State>) -> Result<Vec<String>, St
     };
 
     let mut password_names = Vec::new();
-
-    for row in sql_statement.iter() {
-        match row {
-            Ok(row) => {
-                let name: &str = row.read(0);
-                password_names.push(name.to_string());
-            }
-            Err(err) => {
-                return Err(format!("Failed to read a row from the database: {}", err));
+    if let Ok(password_names_query) = sql_statement.query_map((), |row| row.get::<_, String>(0)) {
+        for row in password_names_query {
+            match row {
+                Ok(row) => {
+                    password_names.push(row);
+                }
+                Err(err) => {
+                    return Err(format!("Failed to read a row from the database: {}", err));
+                }
             }
         }
+    } else {
+        return Err("Failed to read rows from the database.".to_string());
     }
 
     Ok(password_names)
