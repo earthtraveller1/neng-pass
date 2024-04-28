@@ -89,6 +89,8 @@ pub extern "system" fn Java_io_github_earthtraveller1_nengpass_NengPass_00024Com
         .unwrap()
         .to_string();
 
+    log::debug!("[RUST]: Database file: {}", database_file);
+
     let database = open_and_prepare_database(&PathBuf::from(database_file)).unwrap();
 
     let mut sql_statement = database.prepare("SELECT name FROM passwords;").unwrap();
