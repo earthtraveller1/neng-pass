@@ -14,6 +14,8 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.*
 import androidx.compose.material3.ButtonDefaults.buttonColors
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -89,6 +91,8 @@ class PasswordListActivity : ComponentActivity() {
     @Preview
     @Composable
     private fun MainContent(modifier: Modifier = Modifier) {
+        val (passwordList, setPasswordList) = remember { mutableStateOf(NengPass.getPasswordList("${applicationInfo.dataDir}/passwords.db")) }
+
         NengPassTheme {
             Scaffold(
                 topBar = {
@@ -105,8 +109,8 @@ class PasswordListActivity : ComponentActivity() {
                     Column(
                         modifier = modifier.verticalScroll(rememberScrollState()),
                     ) {
-                        for (i in 1..20) {
-                            PasswordEntry(modifier = modifier, name = "Neng Li")
+                        for (password in passwordList) {
+                            PasswordEntry(modifier = modifier, name = password)
                         }
                     }
                 }
