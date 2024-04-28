@@ -135,7 +135,7 @@ fn main() {
                         eprintln!("[ERROR]: {}", err.get_message());
                         std::process::exit(1);
                     }
-                };
+            };
 
             let raw_mode = sub_matches.get_flag("raw");
             if raw_mode {
