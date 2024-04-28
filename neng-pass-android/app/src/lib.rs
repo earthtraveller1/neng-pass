@@ -4,18 +4,18 @@ use jni::{
     JNIEnv,
 };
 
-use neng_pass::sqlite;
+use neng_pass::rusqlite;
 
 use std::path::PathBuf;
 
-fn open_and_prepare_database(data_dir: &PathBuf) -> Result<sqlite::Connection, String> {
-    let sql_connection = match sqlite::open(data_dir.join("passwords.db")) {
+fn open_and_prepare_database(data_dir: &PathBuf) -> Result<rusqlite::Connection, String> {
+    let sql_connection = match rusqlite::Connection::open(data_dir.join("passwords.db")) {
         Ok(connection) => connection,
         Err(err) => return Err(format!("Failed to open the database: {}", err)),
     };
 
     if let Err(err) =
-        sql_connection.execute("CREATE TABLE IF NOT EXISTS passwords (name TEXT, password BLOB);")
+        sql_connection.execute("CREATE TABLE IF NOT EXISTS passwords (name TEXT, password BLOB);", ())
     {
         return Err(format!(
             "Failed to prepare the table in the database: {}",
@@ -105,14 +105,13 @@ pub extern "system" fn Java_io_github_earthtraveller1_nengpass_NengPass_00024Com
         )
         .unwrap();
 
-    for (i, row) in sql_statement.iter().enumerate() {
+    for (i, row) in sql_statement.query_map([], |row| row.get::<_, String>(0)).unwrap().enumerate() {
         let row = row.unwrap();
-        let name: &str = row.read(0);
 
         env.set_object_array_element(
             &mut passwords,
             i.try_into().unwrap(),
-            env.new_string(name).unwrap(),
+            env.new_string(row).unwrap(),
         )
         .unwrap();
     }
