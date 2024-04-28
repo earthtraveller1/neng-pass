@@ -71,9 +71,9 @@ fn main() {
 
     eprintln!("[INFO]: Program data are stored in {}", data_dir);
 
-    let sql_connection = sqlite::open(format!("{}/passwords.db", data_dir)).unwrap();
+    let sql_connection = rusqlite::Connection::open(format!("{}/passwords.db", data_dir)).unwrap();
     sql_connection
-        .execute("CREATE TABLE IF NOT EXISTS passwords (name TEXT, password BLOB);")
+        .execute("CREATE TABLE IF NOT EXISTS passwords (name TEXT, password BLOB);", ())
         .unwrap();
 
     let master_key_path = format!("{}/master_key", data_dir);
@@ -155,10 +155,10 @@ fn main() {
             eprintln!("Here is the list of passwords that you have stored.\n");
 
             sql_statement
-                .iter()
-                .map(|row| row.unwrap())
+                .query_map([], |row| row.get::<_, String>(0))
+                .unwrap()
                 .for_each(|row| {
-                    let name: &str = row.read(0);
+                    let name: String = row.unwrap();
                     eprintln!("\t - {}", name);
                 });
         }
