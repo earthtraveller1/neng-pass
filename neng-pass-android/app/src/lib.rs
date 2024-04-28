@@ -1,6 +1,6 @@
 use jni::{
     objects::{JClass, JString},
-    sys::{jarray, jboolean, jstring},
+    sys::{jboolean, jobjectArray, jstring},
     JNIEnv,
 };
 
@@ -77,7 +77,10 @@ pub extern "system" fn Java_io_github_earthtraveller1_nengpass_NengPass_00024Com
     mut env: JNIEnv,
     _p_class: JClass,
     p_database_file: JString,
-) -> jarray {
+) -> jobjectArray {
+    android_log::init("io.github.earthtraveller1.nengpass").unwrap();
+    log_panics::init();
+
     let string_class = env.find_class("java/lang/String").unwrap();
     let database_file = env
         .get_string(&p_database_file)
@@ -88,7 +91,7 @@ pub extern "system" fn Java_io_github_earthtraveller1_nengpass_NengPass_00024Com
 
     let database = open_and_prepare_database(&PathBuf::from(database_file)).unwrap();
 
-    let mut sql_statement = database.prepare("SELECT name FROM passwords").unwrap();
+    let mut sql_statement = database.prepare("SELECT name FROM passwords;").unwrap();
 
     let password_count = sql_statement.column_count();
 
