@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
@@ -18,6 +19,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -97,6 +101,7 @@ class PasswordListActivity : ComponentActivity() {
         val (createPasswordDialog, setCreatePasswordDialog) = remember { mutableStateOf(false) }
         val (newPasswordName, setNewPasswordName) = remember { mutableStateOf("") }
         val (newPasswordValue, setNewPasswordValue) = remember { mutableStateOf("") }
+        val (newPasswordError, setNewPasswordError) = remember { mutableStateOf("") }
 
         val passwordListValue = NengPass.getPasswordList(applicationContext.dataDir.canonicalPath)
         val (passwordList, setPasswordList) = remember { mutableStateOf(passwordListValue) }
@@ -131,22 +136,39 @@ class PasswordListActivity : ComponentActivity() {
                                 label = {
                                     Text("Password")
                                 },
+                                visualTransformation = PasswordVisualTransformation(),
+                                keyboardOptions = KeyboardOptions(
+                                    keyboardType = KeyboardType.Password,
+                                    capitalization = KeyboardCapitalization.None,
+                                    autoCorrect = false,
+                                ),
                                 modifier = modifier.padding(vertical = 16.dp)
                             )
 
+                            if (newPasswordError != "") {
+                                Text(newPasswordError, color = MaterialTheme.colorScheme.error)
+                            }
+
                             Button(
                                 onClick = {
-                                    NengPass.savePassword(applicationContext.dataDir.canonicalPath, masterKey, newPasswordName, newPasswordValue)
-                                    // TODO: Check that the password isn't too long.
+                                    if (newPasswordValue.length > 16) {
+                                        setNewPasswordError("Your password is too long. Maximum length is 16")
+                                    } else if (newPasswordName == "") {
+                                        setNewPasswordError("Password must have a name")
+                                    } else if (newPasswordValue == "") {
+                                        setNewPasswordError("You didn't enter your password")
+                                    } else {
+                                        setNewPasswordError("")
+                                        NengPass.savePassword(applicationContext.dataDir.canonicalPath, masterKey, newPasswordName, newPasswordValue)
+                                        setNewPasswordName("")
+                                        setNewPasswordValue("")
 
-                                    // Refresh the password list.
-                                    val newPasswordList = NengPass.getPasswordList(applicationContext.dataDir.canonicalPath)
-                                    setPasswordList(newPasswordList)
+                                        // Refresh the password list.
+                                        val newPasswordList = NengPass.getPasswordList(applicationContext.dataDir.canonicalPath)
+                                        setPasswordList(newPasswordList)
 
-                                    setCreatePasswordDialog(false)
-
-                                    setNewPasswordName("")
-                                    setNewPasswordValue("")
+                                        setCreatePasswordDialog(false)
+                                    }
                                 },
                                 modifier = modifier.padding(vertical = 16.dp)
                             ) {
