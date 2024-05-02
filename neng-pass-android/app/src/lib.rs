@@ -1,21 +1,21 @@
 use jni::{
     objects::{JClass, JString},
-    sys::{jarray, jboolean, jstring},
+    sys::{jboolean, jobjectArray, jstring},
     JNIEnv,
 };
 
-use neng_pass::sqlite;
+use neng_pass::rusqlite;
 
 use std::path::PathBuf;
 
-fn open_and_prepare_database(data_dir: &PathBuf) -> Result<sqlite::Connection, String> {
-    let sql_connection = match sqlite::open(data_dir.join("passwords.db")) {
+fn open_and_prepare_database(data_dir: &PathBuf) -> Result<rusqlite::Connection, String> {
+    let sql_connection = match rusqlite::Connection::open(data_dir.join("passwords.db")) {
         Ok(connection) => connection,
         Err(err) => return Err(format!("Failed to open the database: {}", err)),
     };
 
     if let Err(err) =
-        sql_connection.execute("CREATE TABLE IF NOT EXISTS passwords (name TEXT, password BLOB);")
+        sql_connection.execute("CREATE TABLE IF NOT EXISTS passwords (name TEXT, password BLOB);", ())
     {
         return Err(format!(
             "Failed to prepare the table in the database: {}",
@@ -77,7 +77,10 @@ pub extern "system" fn Java_io_github_earthtraveller1_nengpass_NengPass_00024Com
     mut env: JNIEnv,
     _p_class: JClass,
     p_database_file: JString,
-) -> jarray {
+) -> jobjectArray {
+    android_log::init("io.github.earthtraveller1.nengpass").unwrap();
+    log_panics::init();
+
     let string_class = env.find_class("java/lang/String").unwrap();
     let database_file = env
         .get_string(&p_database_file)
@@ -86,9 +89,11 @@ pub extern "system" fn Java_io_github_earthtraveller1_nengpass_NengPass_00024Com
         .unwrap()
         .to_string();
 
+    log::debug!("[RUST]: Database file: {}", database_file);
+
     let database = open_and_prepare_database(&PathBuf::from(database_file)).unwrap();
 
-    let mut sql_statement = database.prepare("SELECT name FROM passwords").unwrap();
+    let mut sql_statement = database.prepare("SELECT name FROM passwords;").unwrap();
 
     let password_count = sql_statement.column_count();
 
@@ -100,14 +105,13 @@ pub extern "system" fn Java_io_github_earthtraveller1_nengpass_NengPass_00024Com
         )
         .unwrap();
 
-    for (i, row) in sql_statement.iter().enumerate() {
+    for (i, row) in sql_statement.query_map([], |row| row.get::<_, String>(0)).unwrap().enumerate() {
         let row = row.unwrap();
-        let name: &str = row.read(0);
 
         env.set_object_array_element(
             &mut passwords,
             i.try_into().unwrap(),
-            env.new_string(name).unwrap(),
+            env.new_string(row).unwrap(),
         )
         .unwrap();
     }

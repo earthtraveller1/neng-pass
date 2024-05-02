@@ -9,10 +9,10 @@ pub mod crypto;
 use argon2::{password_hash::Error as Argon2Error, Argon2, PasswordHash, PasswordVerifier};
 use rand::{Rng, SeedableRng};
 use rand_chacha::ChaCha20Rng;
-use sqlite::Error as SqliteError;
+use rusqlite::Error as SqliteError;
 use std::io::Error as IOError;
 
-pub use sqlite;
+pub use rusqlite;
 
 pub const MAX_MASTER_KEY_LEN: usize = 32;
 pub const MAX_PASSWORD_LEN: usize = 16;
@@ -163,13 +163,12 @@ pub fn create_password(
     mut p_master_key: String,
     p_name: &str,
     p_password: &str,
-    p_sql_connection: &sqlite::Connection,
+    p_sql_connection: &rusqlite::Connection,
 ) -> Result<(), Error> {
-    let mut sql_statement =
-        p_sql_connection.prepare("SELECT name FROM passwords WHERE name = ?")?;
-    sql_statement.bind((1, p_name)).unwrap();
+    let mut sql_statement = p_sql_connection.prepare("SELECT name FROM passwords WHERE name = ?")?;
+    let password_names = sql_statement.query_map([p_name], |row| row.get::<_, String>(0))?;
 
-    if sql_statement.iter().count() > 0 {
+    if password_names.count() > 0 {
         return Err(Error::PasswordAlreadyExists);
     }
 
@@ -185,14 +184,10 @@ pub fn create_password(
 
     let encrypted_password = crypto::encrypt(p_master_key.as_bytes(), &p_password.as_bytes());
 
-    let sql_query = "INSERT INTO passwords VALUES (?, ?)";
-
-    let mut sql_statement = p_sql_connection.prepare(sql_query)?;
-    sql_statement.bind((1, p_name))?;
-    sql_statement.bind((2, &encrypted_password[..]))?;
-
-    // This is how you run SQLite statements, apparently.
-    sql_statement.iter().for_each(|_| {});
+    p_sql_connection.execute(
+        "INSERT INTO passwords VALUES (?, ?)",
+        (p_name, &encrypted_password[..]),
+    )?;
 
     Ok(()) // Placeholder
 }
@@ -200,31 +195,32 @@ pub fn create_password(
 pub fn get_password(
     mut p_master_key: String,
     p_name: &str,
-    p_sql_connection: &sqlite::Connection,
+    p_sql_connection: &rusqlite::Connection,
 ) -> Result<String, Error> {
     while p_master_key.len() < MAX_MASTER_KEY_LEN {
         p_master_key.push(' ');
     }
 
-    let sql_query = "SELECT * FROM passwords WHERE name = ?;";
+    /* let sql_query = "SELECT * FROM passwords WHERE name = ?;";
     let mut sql_statement = p_sql_connection.prepare(sql_query)?;
-    sql_statement.bind((1, p_name))?;
+    sql_statement.bind((1, p_name))?; */
 
-    let row = match sql_statement.iter().next() {
+    let mut sql_statement = p_sql_connection.prepare("SELECT * FROM passwords WHERE name = ?;")?;
+    let mut password_names = sql_statement.query_map([p_name], |row| row.get::<_, Vec<u8>>(0))?;
+
+    let row = match password_names.next() {
         Some(row) => row,
         None => return Err(Error::PasswordDoesntExist(Box::from(p_name))),
     }?;
 
-    let password = row.read(1);
-    let decrypted_password = crypto::decrypt(p_master_key.as_bytes(), password);
+    let password = row;
+    let decrypted_password = crypto::decrypt(p_master_key.as_bytes(), &password);
 
     Ok(String::from_utf8_lossy(&decrypted_password).to_string())
 }
 
-pub fn delete_password(p_name: &str, p_sql_connection: &sqlite::Connection) -> Result<(), Error> {
+pub fn delete_password(p_name: &str, p_sql_connection: &rusqlite::Connection) -> Result<(), Error> {
     let mut sql_statement = p_sql_connection.prepare("DELETE FROM passwords WHERE name = ?;")?;
-    sql_statement.bind((1, p_name))?;
-
-    sql_statement.iter().for_each(|_| {});
+    sql_statement.execute([p_name])?;
     Ok(())
 }

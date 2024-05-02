@@ -4,8 +4,10 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Lock
@@ -71,7 +73,7 @@ class PasswordListActivity : ComponentActivity() {
             ),
             shape = RoundedCornerShape(corner = CornerSize(10.dp)),
             modifier = modifier
-                .padding(18.dp)
+                .padding(horizontal = 18.dp, vertical = 6.dp)
                 .fillMaxWidth(),
         ) {
             Row(
@@ -95,6 +97,9 @@ class PasswordListActivity : ComponentActivity() {
         val (createPasswordDialog, setCreatePasswordDialog) = remember { mutableStateOf(false) }
         val (newPasswordName, setNewPasswordName) = remember { mutableStateOf("") }
         val (newPasswordValue, setNewPasswordValue) = remember { mutableStateOf("") }
+
+        val passwordListValue = NengPass.getPasswordList(applicationContext.dataDir.canonicalPath)
+        val (passwordList, setPasswordList) = remember { mutableStateOf(passwordListValue) }
 
         NengPassTheme {
             if (createPasswordDialog) {
@@ -151,8 +156,12 @@ class PasswordListActivity : ComponentActivity() {
                         .fillMaxSize(),
                     color = MaterialTheme.colorScheme.background,
                 ) {
-                    Column(modifier = modifier) {
-                        PasswordEntry(modifier = modifier, name = "Neng Li")
+                    Column(
+                        modifier = modifier.verticalScroll(rememberScrollState()),
+                    ) {
+                        for (password in passwordList) {
+                            PasswordEntry(modifier = modifier, name = password)
+                        }
                     }
                 }
             }
