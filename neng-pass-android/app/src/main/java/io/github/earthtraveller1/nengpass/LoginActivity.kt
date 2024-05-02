@@ -29,6 +29,7 @@ class LoginActivity : ComponentActivity() {
         val (passwordValue, setPasswordValue) = remember { mutableStateOf("") }
         val (confirmPasswordValue, setConfirmPasswordValue) = remember { mutableStateOf("") }
         val (passwordNoMatchDialog, setPasswordNoMatchDialog) = remember { mutableStateOf(false) }
+        val (passwordTooLongDialog, setPasswordTooLongDialog) = remember { mutableStateOf(false) }
 
         Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = modifier) {
             if (passwordNoMatchDialog) {
@@ -36,6 +37,14 @@ class LoginActivity : ComponentActivity() {
                     onDismissRequest = { setPasswordNoMatchDialog(false) }
                 ) {
                     Text("The passwords that you provided did not match.")
+                }
+            }
+
+            if (passwordTooLongDialog) {
+                Dialog(
+                    onDismissRequest = { setPasswordTooLongDialog(true) }
+                ) {
+                    Text("The password is too long. Maximum length is 32 characters.")
                 }
             }
 
@@ -70,15 +79,21 @@ class LoginActivity : ComponentActivity() {
 
             Button(
                 onClick = {
-                    if (passwordValue == confirmPasswordValue) {
-                        NengPass.setMasterKey("${applicationInfo.dataDir}/master_key", passwordValue)
-
-                        val intent = Intent(applicationContext, PasswordListActivity::class.java)
-                        intent.putExtra("masterKey", passwordValue)
-                        startActivity(intent)
-                    } else {
+                    if (passwordValue != confirmPasswordValue) {
                         setPasswordNoMatchDialog(true)
+                        return@Button
                     }
+
+                    if (passwordValue.length > 32) {
+                        setPasswordTooLongDialog(true)
+                        return@Button
+                    }
+
+                    NengPass.setMasterKey("${applicationInfo.dataDir}/master_key", passwordValue)
+
+                    val intent = Intent(applicationContext, PasswordListActivity::class.java)
+                    intent.putExtra("masterKey", passwordValue)
+                    startActivity(intent)
                 }
             ) {
                 Text("Ok")
