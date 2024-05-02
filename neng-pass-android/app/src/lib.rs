@@ -57,8 +57,8 @@ pub extern "system" fn Java_io_github_earthtraveller1_nengpass_NengPass_00024Com
     p_file: JString,
     p_master_key: JString,
 ) -> jboolean {
-    android_log::init("io.github.earthtraveller1.nengpass").unwrap();
-    log_panics::init();
+    // android_log::init("io.github.earthtraveller1.nengpass").unwrap();
+    // log_panics::init();
 
     let file_name = env
         .get_string(&p_file)
