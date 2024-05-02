@@ -1,6 +1,5 @@
 package io.github.earthtraveller1.nengpass
 
-import android.graphics.Paint.Align
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -137,7 +136,17 @@ class PasswordListActivity : ComponentActivity() {
 
                             Button(
                                 onClick = {
+                                    NengPass.savePassword(applicationContext.dataDir.canonicalPath, masterKey, newPasswordName, newPasswordValue)
+                                    // TODO: Check that the password isn't too long.
 
+                                    // Refresh the password list.
+                                    val newPasswordList = NengPass.getPasswordList(applicationContext.dataDir.canonicalPath)
+                                    setPasswordList(newPasswordList)
+
+                                    setCreatePasswordDialog(false)
+
+                                    setNewPasswordName("")
+                                    setNewPasswordValue("")
                                 },
                                 modifier = modifier.padding(vertical = 16.dp)
                             ) {
@@ -164,7 +173,9 @@ class PasswordListActivity : ComponentActivity() {
                         modifier = modifier.verticalScroll(rememberScrollState()),
                     ) {
                         for (password in passwordList) {
-                            PasswordEntry(modifier = modifier, name = password)
+                            if (password.trim() != "") {
+                                PasswordEntry(modifier = modifier, name = password)
+                            }
                         }
                     }
                 }
