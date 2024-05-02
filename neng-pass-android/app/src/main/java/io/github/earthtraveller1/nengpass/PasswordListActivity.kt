@@ -1,5 +1,6 @@
 package io.github.earthtraveller1.nengpass
 
+import android.graphics.Paint.Align
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -108,37 +109,40 @@ class PasswordListActivity : ComponentActivity() {
                         setCreatePasswordDialog(false)
                     }
                 ) {
-                    Surface(modifier = modifier) {
-                        Text("Create a password")
+                    Surface(modifier = modifier, color = MaterialTheme.colorScheme.secondaryContainer, shape = RoundedCornerShape(16.dp)) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = modifier.padding(24.dp)) {
+                            Text("Create a password", color = MaterialTheme.colorScheme.onSecondaryContainer)
 
-                        TextField(
-                            value = newPasswordName,
-                            onValueChange = { newValue: String ->
-                                setNewPasswordName(newValue)
-                            },
-                            label = {
-                                Text("Name")
-                            },
-                            modifier = modifier
-                        )
+                            TextField(
+                                value = newPasswordName,
+                                onValueChange = { newValue: String ->
+                                    setNewPasswordName(newValue)
+                                },
+                                label = {
+                                    Text("Name")
+                                },
+                                modifier = modifier.padding(vertical = 16.dp)
+                            )
 
-                        TextField(
-                            value = newPasswordValue,
-                            onValueChange = { newValue: String ->
-                                setNewPasswordValue(newValue)
-                            },
-                            label = {
-                                Text("Password")
-                            },
-                            modifier = modifier
-                        )
+                            TextField(
+                                value = newPasswordValue,
+                                onValueChange = { newValue: String ->
+                                    setNewPasswordValue(newValue)
+                                },
+                                label = {
+                                    Text("Password")
+                                },
+                                modifier = modifier.padding(vertical = 16.dp)
+                            )
 
-                        Button(
-                            onClick = {
+                            Button(
+                                onClick = {
 
+                                },
+                                modifier = modifier.padding(vertical = 16.dp)
+                            ) {
+                                Text("Create Password")
                             }
-                        ) {
-                            Text("Create Password")
                         }
                     }
                 }
