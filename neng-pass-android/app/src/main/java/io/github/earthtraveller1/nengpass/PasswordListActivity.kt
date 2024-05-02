@@ -22,7 +22,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import io.github.earthtraveller1.nengpass.ui.theme.NengPassTheme
@@ -95,88 +94,106 @@ class PasswordListActivity : ComponentActivity() {
         }
     }
 
-    @Preview
     @Composable
-    private fun MainContent(modifier: Modifier = Modifier) {
-        val (createPasswordDialog, setCreatePasswordDialog) = remember { mutableStateOf(false) }
+    fun CreatePasswordDialog(
+        modifier: Modifier = Modifier,
+        setDialog: (Boolean) -> Unit,
+        setPasswordList: (Array<String>) -> Unit
+    ) {
         val (newPasswordName, setNewPasswordName) = remember { mutableStateOf("") }
         val (newPasswordValue, setNewPasswordValue) = remember { mutableStateOf("") }
         val (newPasswordError, setNewPasswordError) = remember { mutableStateOf("") }
+
+        Dialog(
+            onDismissRequest = {
+                setDialog(false)
+            }
+        ) {
+            Surface(
+                modifier = modifier,
+                color = MaterialTheme.colorScheme.secondaryContainer,
+                shape = RoundedCornerShape(16.dp)
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = modifier.padding(24.dp)) {
+                    Text("Create a password", color = MaterialTheme.colorScheme.onSecondaryContainer)
+
+                    TextField(
+                        value = newPasswordName,
+                        onValueChange = { newValue: String ->
+                            setNewPasswordName(newValue)
+                        },
+                        label = {
+                            Text("Name")
+                        },
+                        modifier = modifier.padding(vertical = 16.dp)
+                    )
+
+                    TextField(
+                        value = newPasswordValue,
+                        onValueChange = { newValue: String ->
+                            setNewPasswordValue(newValue)
+                        },
+                        label = {
+                            Text("Password")
+                        },
+                        visualTransformation = PasswordVisualTransformation(),
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Password,
+                            capitalization = KeyboardCapitalization.None,
+                            autoCorrect = false,
+                        ),
+                        modifier = modifier.padding(vertical = 16.dp)
+                    )
+
+                    if (newPasswordError != "") {
+                        Text(newPasswordError, color = MaterialTheme.colorScheme.error)
+                    }
+
+                    Button(
+                        onClick = {
+                            if (newPasswordValue.length > 16) {
+                                setNewPasswordError("Your password is too long. Maximum length is 16")
+                            } else if (newPasswordName == "") {
+                                setNewPasswordError("Password must have a name")
+                            } else if (newPasswordValue == "") {
+                                setNewPasswordError("You didn't enter your password")
+                            } else {
+                                setNewPasswordError("")
+                                NengPass.savePassword(
+                                    applicationContext.dataDir.canonicalPath,
+                                    masterKey,
+                                    newPasswordName,
+                                    newPasswordValue
+                                )
+                                setNewPasswordName("")
+                                setNewPasswordValue("")
+
+                                // Refresh the password list.
+                                val newPasswordList = NengPass.getPasswordList(applicationContext.dataDir.canonicalPath)
+                                setPasswordList(newPasswordList)
+
+                                setDialog(false)
+                            }
+                        },
+                        modifier = modifier.padding(vertical = 16.dp)
+                    ) {
+                        Text("Create Password")
+                    }
+                }
+            }
+        }
+    }
+
+    @Composable
+    fun MainContent(modifier: Modifier = Modifier) {
+        val (createPasswordDialog, setCreatePasswordDialog) = remember { mutableStateOf(false) }
 
         val passwordListValue = NengPass.getPasswordList(applicationContext.dataDir.canonicalPath)
         val (passwordList, setPasswordList) = remember { mutableStateOf(passwordListValue) }
 
         NengPassTheme {
             if (createPasswordDialog) {
-                Dialog(
-                    onDismissRequest = {
-                        setCreatePasswordDialog(false)
-                    }
-                ) {
-                    Surface(modifier = modifier, color = MaterialTheme.colorScheme.secondaryContainer, shape = RoundedCornerShape(16.dp)) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = modifier.padding(24.dp)) {
-                            Text("Create a password", color = MaterialTheme.colorScheme.onSecondaryContainer)
-
-                            TextField(
-                                value = newPasswordName,
-                                onValueChange = { newValue: String ->
-                                    setNewPasswordName(newValue)
-                                },
-                                label = {
-                                    Text("Name")
-                                },
-                                modifier = modifier.padding(vertical = 16.dp)
-                            )
-
-                            TextField(
-                                value = newPasswordValue,
-                                onValueChange = { newValue: String ->
-                                    setNewPasswordValue(newValue)
-                                },
-                                label = {
-                                    Text("Password")
-                                },
-                                visualTransformation = PasswordVisualTransformation(),
-                                keyboardOptions = KeyboardOptions(
-                                    keyboardType = KeyboardType.Password,
-                                    capitalization = KeyboardCapitalization.None,
-                                    autoCorrect = false,
-                                ),
-                                modifier = modifier.padding(vertical = 16.dp)
-                            )
-
-                            if (newPasswordError != "") {
-                                Text(newPasswordError, color = MaterialTheme.colorScheme.error)
-                            }
-
-                            Button(
-                                onClick = {
-                                    if (newPasswordValue.length > 16) {
-                                        setNewPasswordError("Your password is too long. Maximum length is 16")
-                                    } else if (newPasswordName == "") {
-                                        setNewPasswordError("Password must have a name")
-                                    } else if (newPasswordValue == "") {
-                                        setNewPasswordError("You didn't enter your password")
-                                    } else {
-                                        setNewPasswordError("")
-                                        NengPass.savePassword(applicationContext.dataDir.canonicalPath, masterKey, newPasswordName, newPasswordValue)
-                                        setNewPasswordName("")
-                                        setNewPasswordValue("")
-
-                                        // Refresh the password list.
-                                        val newPasswordList = NengPass.getPasswordList(applicationContext.dataDir.canonicalPath)
-                                        setPasswordList(newPasswordList)
-
-                                        setCreatePasswordDialog(false)
-                                    }
-                                },
-                                modifier = modifier.padding(vertical = 16.dp)
-                            ) {
-                                Text("Create Password")
-                            }
-                        }
-                    }
-                }
+                CreatePasswordDialog(modifier, setCreatePasswordDialog, setPasswordList)
             }
 
             Scaffold(
@@ -192,7 +209,9 @@ class PasswordListActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background,
                 ) {
                     Column(
-                        modifier = modifier.verticalScroll(rememberScrollState()),
+                        modifier = modifier
+                            .verticalScroll(rememberScrollState())
+                            .padding(top = 16.dp),
                     ) {
                         for (password in passwordList) {
                             if (password.trim() != "") {
