@@ -14,9 +14,10 @@ fn open_and_prepare_database(data_dir: &PathBuf) -> Result<rusqlite::Connection,
         Err(err) => return Err(format!("Failed to open the database: {}", err)),
     };
 
-    if let Err(err) =
-        sql_connection.execute("CREATE TABLE IF NOT EXISTS passwords (name TEXT, password BLOB);", ())
-    {
+    if let Err(err) = sql_connection.execute(
+        "CREATE TABLE IF NOT EXISTS passwords (name TEXT, password BLOB);",
+        (),
+    ) {
         return Err(format!(
             "Failed to prepare the table in the database: {}",
             err
@@ -56,6 +57,9 @@ pub extern "system" fn Java_io_github_earthtraveller1_nengpass_NengPass_00024Com
     p_file: JString,
     p_master_key: JString,
 ) -> jboolean {
+    android_log::init("io.github.earthtraveller1.nengpass").unwrap();
+    log_panics::init();
+
     let file_name = env
         .get_string(&p_file)
         .unwrap()
@@ -78,9 +82,6 @@ pub extern "system" fn Java_io_github_earthtraveller1_nengpass_NengPass_00024Com
     _p_class: JClass,
     p_database_file: JString,
 ) -> jobjectArray {
-    android_log::init("io.github.earthtraveller1.nengpass").unwrap();
-    log_panics::init();
-
     let string_class = env.find_class("java/lang/String").unwrap();
     let database_file = env
         .get_string(&p_database_file)
@@ -95,25 +96,31 @@ pub extern "system" fn Java_io_github_earthtraveller1_nengpass_NengPass_00024Com
 
     let mut sql_statement = database.prepare("SELECT name FROM passwords;").unwrap();
 
-    let password_count = sql_statement.column_count();
+    let mut native_passwords = Vec::<String>::new();
+
+    for row in sql_statement
+        .query_map([], |row| row.get::<_, String>(0))
+        .unwrap()
+    {
+        let row = row.unwrap();
+        native_passwords.push(row);
+    }
 
     let mut passwords = env
         .new_object_array(
-            password_count.try_into().unwrap(),
+            native_passwords.len().try_into().unwrap(),
             string_class,
             env.new_string("").unwrap(),
         )
         .unwrap();
 
-    for (i, row) in sql_statement.query_map([], |row| row.get::<_, String>(0)).unwrap().enumerate() {
-        let row = row.unwrap();
-
-        env.set_object_array_element(
-            &mut passwords,
-            i.try_into().unwrap(),
-            env.new_string(row).unwrap(),
-        )
-        .unwrap();
+    for (index, password) in native_passwords.iter().enumerate() {
+         env.set_object_array_element(
+             &mut passwords,
+             index.try_into().unwrap(),
+             env.new_string(password).unwrap(),
+         )
+         .unwrap();
     }
 
     passwords.as_raw()
