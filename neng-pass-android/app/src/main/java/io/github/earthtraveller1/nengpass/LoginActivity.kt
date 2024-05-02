@@ -7,6 +7,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -36,7 +37,13 @@ class LoginActivity : ComponentActivity() {
                 Dialog(
                     onDismissRequest = { setPasswordNoMatchDialog(false) }
                 ) {
-                    Text("The passwords that you provided did not match.")
+                    Surface(color = MaterialTheme.colorScheme.error, shape = RoundedCornerShape(16.dp)) {
+                        Text(
+                            "The passwords that you provided did not match.",
+                            color = MaterialTheme.colorScheme.onError,
+                            modifier = modifier.padding(24.dp)
+                        )
+                    }
                 }
             }
 
@@ -44,7 +51,13 @@ class LoginActivity : ComponentActivity() {
                 Dialog(
                     onDismissRequest = { setPasswordTooLongDialog(true) }
                 ) {
-                    Text("The password is too long. Maximum length is 32 characters.")
+                    Surface(color = MaterialTheme.colorScheme.error, shape = RoundedCornerShape(16.dp)) {
+                        Text(
+                            "The password is too long. Maximum length is 32 characters.",
+                            color = MaterialTheme.colorScheme.onError,
+                            modifier = modifier.padding(24.dp)
+                        )
+                    }
                 }
             }
 
@@ -111,7 +124,13 @@ class LoginActivity : ComponentActivity() {
                 Dialog (
                     onDismissRequest = { setPasswordIncorrectDialog(false) }
                 ) {
-                    Text("Sorry, but the password is incorrect.")
+                    Surface(color = MaterialTheme.colorScheme.error, shape = RoundedCornerShape(16.dp)) {
+                        Text(
+                            "Sorry, but the password is incorrect.",
+                            color = MaterialTheme.colorScheme.onError,
+                            modifier = modifier.padding(24.dp)
+                        )
+                    }
                 }
             }
 
