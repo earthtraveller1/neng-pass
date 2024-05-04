@@ -15,6 +15,8 @@ interface NengPass {
         external fun generatePassword(): String
 
         external fun savePassword(databaseFile: String, masterKey: String, name: String, password: String)
+
+        external fun getPassword(databaseFile: String, masterKey: String, name: String)
     }
 }
 

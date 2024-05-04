@@ -115,12 +115,12 @@ pub extern "system" fn Java_io_github_earthtraveller1_nengpass_NengPass_00024Com
         .unwrap();
 
     for (index, password) in native_passwords.iter().enumerate() {
-         env.set_object_array_element(
-             &mut passwords,
-             index.try_into().unwrap(),
-             env.new_string(password).unwrap(),
-         )
-         .unwrap();
+        env.set_object_array_element(
+            &mut passwords,
+            index.try_into().unwrap(),
+            env.new_string(password).unwrap(),
+        )
+        .unwrap();
     }
 
     passwords.as_raw()
@@ -177,4 +177,39 @@ pub extern "system" fn Java_io_github_earthtraveller1_nengpass_NengPass_00024Com
         .to_string();
 
     neng_pass::create_password(master_key, &name, &password, &database).unwrap();
+}
+
+#[no_mangle]
+pub extern "system" fn Java_io_github_earthtraveller1_nengpass_NengPass_00024Companion_getPassword(
+    mut env: JNIEnv,
+    _p_class: JClass,
+    p_database_file: JString,
+    p_master_key: JString,
+    p_name: JString,
+) -> jstring {
+    let database_file = env
+        .get_string(&p_database_file)
+        .unwrap()
+        .to_str()
+        .unwrap()
+        .to_string();
+
+    let master_key = env
+        .get_string(&p_master_key)
+        .unwrap()
+        .to_str()
+        .unwrap()
+        .to_string();
+
+    let name = env
+        .get_string(&p_name)
+        .unwrap()
+        .to_str()
+        .unwrap()
+        .to_string();
+
+    let database = open_and_prepare_database(&PathBuf::from(database_file)).unwrap();
+
+    let password = neng_pass::get_password(master_key, &name, &database).unwrap();
+    env.new_string(password).unwrap().as_raw()
 }
