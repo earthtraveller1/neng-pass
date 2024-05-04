@@ -65,11 +65,9 @@ class PasswordListActivity : ComponentActivity() {
     }
 
     @Composable
-    fun PasswordEntry(modifier: Modifier = Modifier, name: String) {
+    fun PasswordEntry(modifier: Modifier = Modifier, name: String, onClick: () -> Unit = {}) {
         Button(
-            onClick = {
-
-            },
+            onClick = onClick,
             colors = buttonColors(
                 containerColor = MaterialTheme.colorScheme.secondaryContainer,
                 contentColor = MaterialTheme.colorScheme.onSecondaryContainer
@@ -90,6 +88,38 @@ class PasswordListActivity : ComponentActivity() {
                 )
 
                 Text(name)
+            }
+        }
+    }
+
+    @Composable
+    fun PasswordDialog(
+        modifier: Modifier = Modifier,
+        setPasswordDialog: (Boolean) -> Unit,
+        passwordName: String
+    ) {
+        val password = NengPass.getPassword(applicationContext.dataDir.canonicalPath, masterKey, passwordName)
+
+        Dialog(
+            onDismissRequest = {
+                setPasswordDialog(false)
+            }
+        ) {
+            Surface(
+                modifier = modifier,
+                color = MaterialTheme.colorScheme.secondaryContainer,
+                shape = RoundedCornerShape(16.dp)
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = modifier.padding(24.dp)
+                ) {
+                    Text(
+                        text = passwordName,
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                    )
+                }
             }
         }
     }
@@ -196,6 +226,8 @@ class PasswordListActivity : ComponentActivity() {
     @Composable
     fun MainContent(modifier: Modifier = Modifier) {
         val (createPasswordDialog, setCreatePasswordDialog) = remember { mutableStateOf(false) }
+        val (passwordDialog, setPasswordDialog) = remember { mutableStateOf(false) }
+        val (currentPasswordName, setCurrentPasswordName) = remember { mutableStateOf("") }
 
         val passwordListValue = NengPass.getPasswordList(applicationContext.dataDir.canonicalPath)
         val (passwordList, setPasswordList) = remember { mutableStateOf(passwordListValue) }
@@ -203,6 +235,10 @@ class PasswordListActivity : ComponentActivity() {
         NengPassTheme {
             if (createPasswordDialog) {
                 CreatePasswordDialog(modifier, setCreatePasswordDialog, setPasswordList)
+            }
+
+            if (passwordDialog) {
+                PasswordDialog(modifier = modifier, setPasswordDialog, currentPasswordName)
             }
 
             Scaffold(
@@ -224,7 +260,10 @@ class PasswordListActivity : ComponentActivity() {
                     ) {
                         for (password in passwordList) {
                             if (password.trim() != "") {
-                                PasswordEntry(modifier = modifier, name = password)
+                                PasswordEntry(modifier = modifier, name = password, onClick = {
+                                    setCurrentPasswordName(password)
+                                    setPasswordDialog(true)
+                                })
                             }
                         }
                     }
