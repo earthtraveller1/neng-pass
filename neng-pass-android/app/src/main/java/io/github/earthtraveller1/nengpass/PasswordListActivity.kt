@@ -19,6 +19,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -95,9 +96,68 @@ class PasswordListActivity : ComponentActivity() {
     }
 
     @Composable
+    fun DeletePasswordDialog(
+        modifier: Modifier = Modifier,
+        passwordName: String,
+        setPasswordDialog: (Boolean) -> Unit,
+        setDeletePasswordDialog: (Boolean) -> Unit,
+        setPasswordList: (Array<String>) -> Unit
+    ) {
+        Dialog(
+            onDismissRequest = {}
+        ) {
+            Surface(
+                modifier = modifier,
+                color = MaterialTheme.colorScheme.errorContainer
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = modifier.padding(24.dp)
+                ) {
+                    Text(
+                        "Do you want to delete $passwordName?"
+                    )
+
+                    Row(
+                        modifier = modifier.padding(top = 16.dp)
+                    ) {
+                        Button(
+                            onClick = {
+                                setPasswordDialog(true)
+                                setDeletePasswordDialog(false)
+                            },
+                            colors = buttonColors(
+                                containerColor = Color.DarkGray,
+                                contentColor = Color.LightGray
+                            )
+                        ) {
+                            Text("No")
+                        }
+
+                        Button(
+                            onClick = {
+                                NengPass.deletePassword(applicationContext.dataDir.canonicalPath, passwordName)
+                                setPasswordList(NengPass.getPasswordList(applicationContext.dataDir.canonicalPath))
+                                setDeletePasswordDialog(false)
+                            },
+                            colors = buttonColors(
+                                containerColor = MaterialTheme.colorScheme.onErrorContainer,
+                                contentColor = MaterialTheme.colorScheme.error
+                            )
+                        ) {
+                            Text("Yes")
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @Composable
     fun PasswordDialog(
         modifier: Modifier = Modifier,
         setPasswordDialog: (Boolean) -> Unit,
+        setDeletePasswordDialog: (Boolean) -> Unit,
         passwordName: String
     ) {
         val password = NengPass.getPassword(applicationContext.dataDir.canonicalPath, masterKey, passwordName)
@@ -168,6 +228,20 @@ class PasswordListActivity : ComponentActivity() {
                         modifier = modifier.padding(top = 8.dp)
                     ) {
                         Text("Copy to Clipboard!")
+                    }
+
+                    Button(
+                        onClick = {
+                            setDeletePasswordDialog(true)
+                            setPasswordDialog(false)
+                        },
+                        modifier = modifier.padding(top = 8.dp),
+                        colors = buttonColors(
+                            containerColor = MaterialTheme.colorScheme.error,
+                            contentColor = MaterialTheme.colorScheme.onError,
+                        )
+                    ) {
+                        Text("Delete Password")
                     }
                 }
             }
@@ -277,6 +351,8 @@ class PasswordListActivity : ComponentActivity() {
     fun MainContent(modifier: Modifier = Modifier) {
         val (createPasswordDialog, setCreatePasswordDialog) = remember { mutableStateOf(false) }
         val (passwordDialog, setPasswordDialog) = remember { mutableStateOf(false) }
+        val (deletePasswordDialog, setDeletePasswordDialog) = remember { mutableStateOf(false) }
+
         val (currentPasswordName, setCurrentPasswordName) = remember { mutableStateOf("") }
 
         val passwordListValue = NengPass.getPasswordList(applicationContext.dataDir.canonicalPath)
@@ -288,7 +364,17 @@ class PasswordListActivity : ComponentActivity() {
             }
 
             if (passwordDialog) {
-                PasswordDialog(modifier = modifier, setPasswordDialog, currentPasswordName)
+                PasswordDialog(modifier = modifier, setPasswordDialog, setDeletePasswordDialog, currentPasswordName)
+            }
+
+            if (deletePasswordDialog) {
+                DeletePasswordDialog(
+                    modifier = modifier,
+                    currentPasswordName,
+                    setPasswordDialog,
+                    setDeletePasswordDialog,
+                    setPasswordList
+                )
             }
 
             Scaffold(
