@@ -108,11 +108,12 @@ class PasswordListActivity : ComponentActivity() {
         ) {
             Surface(
                 modifier = modifier,
-                color = MaterialTheme.colorScheme.errorContainer
+                color = MaterialTheme.colorScheme.errorContainer,
+                shape = RoundedCornerShape(16.dp)
             ) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = modifier.padding(24.dp)
+                    modifier = modifier.padding(24.dp),
                 ) {
                     Text(
                         "Do you want to delete $passwordName?"
@@ -129,7 +130,8 @@ class PasswordListActivity : ComponentActivity() {
                             colors = buttonColors(
                                 containerColor = Color.DarkGray,
                                 contentColor = Color.LightGray
-                            )
+                            ),
+                            modifier = modifier.padding(horizontal = 16.dp)
                         ) {
                             Text("No")
                         }
@@ -142,8 +144,9 @@ class PasswordListActivity : ComponentActivity() {
                             },
                             colors = buttonColors(
                                 containerColor = MaterialTheme.colorScheme.onErrorContainer,
-                                contentColor = MaterialTheme.colorScheme.error
-                            )
+                                contentColor = MaterialTheme.colorScheme.errorContainer
+                            ),
+                            modifier = modifier.padding(horizontal = 16.dp)
                         ) {
                             Text("Yes")
                         }
