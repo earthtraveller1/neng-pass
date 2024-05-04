@@ -19,6 +19,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -125,8 +127,8 @@ class PasswordListActivity : ComponentActivity() {
                     if (isPasswordVisible) {
                         Text(
                             password,
-                            modifier = modifier,
-                            color = MaterialTheme.colorScheme.onSecondaryContainer
+                            color = MaterialTheme.colorScheme.onSecondaryContainer,
+                            modifier = modifier.padding(vertical = 16.dp)
                         )
                     } else {
                         val hiddenPasswordBuilder = StringBuilder()
@@ -139,7 +141,7 @@ class PasswordListActivity : ComponentActivity() {
 
                         Text(
                             hiddenPassword,
-                            modifier = modifier,
+                            modifier = modifier.padding(vertical = 16.dp),
                             color = MaterialTheme.colorScheme.onSecondaryContainer
                         )
                     }
@@ -147,13 +149,25 @@ class PasswordListActivity : ComponentActivity() {
                     Button(
                         onClick = {
                             setIsPasswordVisible(!isPasswordVisible)
-                        }
+                        },
+                        modifier = modifier.padding(top = 16.dp),
                     ) {
                         if (isPasswordVisible) {
                             Text("Hide Password")
                         } else {
                             Text("Show Password")
                         }
+                    }
+
+                    val clipboard = LocalClipboardManager.current
+
+                    Button(
+                        onClick = {
+                            clipboard.setText(AnnotatedString(password))
+                        },
+                        modifier = modifier.padding(top = 8.dp)
+                    ) {
+                        Text("Copy to Clipboard!")
                     }
                 }
             }
