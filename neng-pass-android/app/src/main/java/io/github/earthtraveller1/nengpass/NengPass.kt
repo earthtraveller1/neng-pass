@@ -18,7 +18,7 @@ interface NengPass {
 
         external fun savePassword(databaseFile: String, masterKey: String, name: String, password: String)
 
-        external fun getPassword(databaseFile: String, masterKey: String, name: String)
+        external fun getPassword(databaseFile: String, masterKey: String, name: String): String
     }
 }
 
