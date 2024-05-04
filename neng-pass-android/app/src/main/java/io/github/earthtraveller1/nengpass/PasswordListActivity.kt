@@ -100,6 +100,8 @@ class PasswordListActivity : ComponentActivity() {
     ) {
         val password = NengPass.getPassword(applicationContext.dataDir.canonicalPath, masterKey, passwordName)
 
+        val (isPasswordVisible, setIsPasswordVisible) = remember { mutableStateOf(false) }
+
         Dialog(
             onDismissRequest = {
                 setPasswordDialog(false)
@@ -119,6 +121,40 @@ class PasswordListActivity : ComponentActivity() {
                         style = MaterialTheme.typography.titleLarge,
                         color = MaterialTheme.colorScheme.onSecondaryContainer
                     )
+
+                    if (isPasswordVisible) {
+                        Text(
+                            password,
+                            modifier = modifier,
+                            color = MaterialTheme.colorScheme.onSecondaryContainer
+                        )
+                    } else {
+                        val hiddenPasswordBuilder = StringBuilder()
+
+                        for (i in 1..(password.length)) {
+                            hiddenPasswordBuilder.append('*')
+                        }
+
+                        val hiddenPassword = hiddenPasswordBuilder.toString()
+
+                        Text(
+                            hiddenPassword,
+                            modifier = modifier,
+                            color = MaterialTheme.colorScheme.onSecondaryContainer
+                        )
+                    }
+
+                    Button(
+                        onClick = {
+                            setIsPasswordVisible(!isPasswordVisible)
+                        }
+                    ) {
+                        if (isPasswordVisible) {
+                            Text("Hide Password")
+                        } else {
+                            Text("Show Password")
+                        }
+                    }
                 }
             }
         }
