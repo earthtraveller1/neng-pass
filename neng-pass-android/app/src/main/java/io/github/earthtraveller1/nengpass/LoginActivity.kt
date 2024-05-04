@@ -171,6 +171,7 @@ class LoginActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        NengPass.init()
 
         setContent {
             NengPassTheme {
