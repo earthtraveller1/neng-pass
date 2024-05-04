@@ -222,3 +222,28 @@ pub extern "system" fn Java_io_github_earthtraveller1_nengpass_NengPass_00024Com
     let password = neng_pass::get_password(master_key, &name, &database).unwrap();
     env.new_string(password).unwrap().as_raw()
 }
+
+#[no_mangle]
+pub extern "system" fn Java_io_github_earthtraveller1_nengpass_NengPass_00024Companion_deletePassword(
+    mut env: JNIEnv,
+    _p_class: JClass,
+    p_database_file: JString,
+    p_name: JString,
+) {
+    let database_file = env
+        .get_string(&p_database_file)
+        .unwrap()
+        .to_str()
+        .unwrap()
+        .to_string();
+
+    let name = env
+        .get_string(&p_name)
+        .unwrap()
+        .to_str()
+        .unwrap()
+        .to_string();
+
+    let database = open_and_prepare_database(&PathBuf::from(database_file)).unwrap();
+    neng_pass::delete_password(&name, &database).unwrap();
+}
