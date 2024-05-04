@@ -206,7 +206,7 @@ pub fn get_password(
     sql_statement.bind((1, p_name))?; */
 
     let mut sql_statement = p_sql_connection.prepare("SELECT * FROM passwords WHERE name = ?;")?;
-    let mut password_names = sql_statement.query_map([p_name], |row| row.get::<_, Vec<u8>>(0))?;
+    let mut password_names = sql_statement.query_map([p_name], |row| row.get::<_, Vec<u8>>(1))?;
 
     let row = match password_names.next() {
         Some(row) => row,
