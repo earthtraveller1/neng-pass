@@ -2,6 +2,8 @@
 
 A basic password manager written in Rust. Supports two modes of interacting with it: through the command line (`neng-pass` binary crate), or through a GUI (the `neng-pass-gui` crate), built with Tauri.
 
+*DISCLAIMER: Because this is just a dumb personal project I made in my spare time, I cannot guarantee that it will be 100% secure. DO NOT ACTUALLY USE THIS FOR ANYTHING SERIOUS!!!*
+
 == Where's the EXE???
 
 As a wise man once said,
