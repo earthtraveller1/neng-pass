@@ -179,6 +179,15 @@ class PasswordListActivity : ComponentActivity() {
                     ) {
                         Text("Create Password")
                     }
+
+                    Button(
+                        onClick = {
+                            setNewPasswordValue(NengPass.generatePassword())
+                        },
+                        modifier = modifier.padding(vertical = 16.dp)
+                    ) {
+                        Text("Generate Random Password")
+                    }
                 }
             }
         }
