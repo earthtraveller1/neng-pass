@@ -28,6 +28,15 @@ fn open_and_prepare_database(data_dir: &PathBuf) -> Result<rusqlite::Connection,
 }
 
 #[no_mangle]
+pub extern "system" fn Java_io_github_earthtraveller1_nengpass_NengPass_00024Companion_init(
+    _env: JNIEnv,
+    _p_class: JClass,
+) {
+    android_log::init("io.github.earthtraveller1.nengpass").unwrap();
+    log_panics::init();
+}
+
+#[no_mangle]
 //                     Java_io_github_earthtraveller1_nengpass_NengPass_00024Companion_setMasterKey
 pub extern "system" fn Java_io_github_earthtraveller1_nengpass_NengPass_00024Companion_setMasterKey(
     mut env: JNIEnv,

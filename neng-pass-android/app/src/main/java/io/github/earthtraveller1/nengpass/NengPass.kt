@@ -6,6 +6,8 @@ interface NengPass {
             System.loadLibrary("neng_pass_android")
         }
 
+        external fun init()
+
         external fun setMasterKey(file: String, newMasterKey: String)
 
         external fun isMasterKeyCorrect(file: String, masterKey: String): Boolean
