@@ -104,7 +104,10 @@ class PasswordListActivity : ComponentActivity() {
         setPasswordList: (Array<String>) -> Unit
     ) {
         Dialog(
-            onDismissRequest = {}
+            onDismissRequest = {
+                setPasswordDialog(true)
+                setDeletePasswordDialog(false)
+            }
         ) {
             Surface(
                 modifier = modifier,
