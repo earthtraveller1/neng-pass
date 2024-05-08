@@ -59,31 +59,8 @@ class LoginActivity : ComponentActivity() {
             Text("Set your master key", fontSize = 6.em, modifier = modifier.padding(top = 24.dp))
             Text("You have not yet set a master key", modifier = modifier.padding(bottom = 48.dp, top = 8.dp))
 
-            TextField(
-                value = passwordValue,
-                label = { Text("Password") },
-                visualTransformation = PasswordVisualTransformation(),
-                onValueChange = { setPasswordValue(it) },
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Password,
-                    capitalization = KeyboardCapitalization.None,
-                    autoCorrect = false
-                ),
-                modifier = modifier.padding(vertical = 24.dp)
-            )
-
-            TextField(
-                value = confirmPasswordValue,
-                label = { Text("Confirm Password") },
-                visualTransformation = PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Password,
-                    capitalization = KeyboardCapitalization.None,
-                    autoCorrect = false
-                ),
-                onValueChange = { setConfirmPasswordValue(it) },
-                modifier = modifier.padding(bottom = 24.dp)
-            )
+            NengPass.PasswordField(modifier, "Password", passwordValue, setPasswordValue)
+            NengPass.PasswordField(modifier, "Confirm Password", confirmPasswordValue, setConfirmPasswordValue)
 
             Button(onClick = {
                 if (passwordValue != confirmPasswordValue) {
@@ -118,18 +95,7 @@ class LoginActivity : ComponentActivity() {
             }
 
             Text("Login", fontSize = 6.em, modifier = modifier.padding(bottom = 32.dp, top = 16.dp))
-            TextField(
-                value = passwordValue,
-                label = { Text("Password") },
-                visualTransformation = PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Password,
-                    capitalization = KeyboardCapitalization.None,
-                    autoCorrect = false
-                ),
-                onValueChange = { setPasswordValue(it) },
-                modifier = modifier.padding(bottom = 32.dp, top = 16.dp)
-            )
+            NengPass.PasswordField(modifier, "Password", passwordValue, setPasswordValue)
 
             Button(onClick = {
                 if (NengPass.isMasterKeyCorrect("${applicationInfo.dataDir}/master_key", passwordValue)) {
