@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
@@ -22,9 +21,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.input.KeyboardCapitalization
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import io.github.earthtraveller1.nengpass.ui.theme.NengPassTheme
@@ -51,12 +47,8 @@ class PasswordListActivity : ComponentActivity() {
                 )
 
                 IconButton(
-                    onClick = {
-                        setNewPasswordDialog(true)
-                    },
-                    modifier = modifier
-                        .padding(24.dp)
-                        .size(48.dp)
+                    onClick = { setNewPasswordDialog(true) },
+                    modifier = modifier.padding(24.dp).size(48.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Filled.AddCircle,
@@ -96,6 +88,21 @@ class PasswordListActivity : ComponentActivity() {
     }
 
     @Composable
+    fun BaseDialogSurface(modifier: Modifier = Modifier, color: Color, content: @Composable ColumnScope.() -> Unit) {
+        Surface(
+            modifier = modifier,
+            color = color,
+            shape = RoundedCornerShape(16.dp)
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = modifier.padding(24.dp),
+                content = content
+            )
+        }
+    }
+
+    @Composable
     fun DeletePasswordDialog(
         modifier: Modifier = Modifier,
         passwordName: String,
@@ -109,50 +116,37 @@ class PasswordListActivity : ComponentActivity() {
                 setDeletePasswordDialog(false)
             }
         ) {
-            Surface(
-                modifier = modifier,
-                color = MaterialTheme.colorScheme.errorContainer,
-                shape = RoundedCornerShape(16.dp)
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = modifier.padding(24.dp),
-                ) {
-                    Text(
-                        "Do you want to delete $passwordName?"
-                    )
+            BaseDialogSurface(modifier, MaterialTheme.colorScheme.errorContainer) {
+                Text("Do you want to delete $passwordName?")
 
-                    Row(
-                        modifier = modifier.padding(top = 16.dp)
+                Row(modifier = modifier.padding(top = 16.dp)) {
+                    Button(
+                        onClick = {
+                            setPasswordDialog(true)
+                            setDeletePasswordDialog(false)
+                        },
+                        colors = buttonColors(
+                            containerColor = Color.DarkGray,
+                            contentColor = Color.LightGray
+                        ),
+                        modifier = modifier.padding(horizontal = 16.dp)
                     ) {
-                        Button(
-                            onClick = {
-                                setPasswordDialog(true)
-                                setDeletePasswordDialog(false)
-                            },
-                            colors = buttonColors(
-                                containerColor = Color.DarkGray,
-                                contentColor = Color.LightGray
-                            ),
-                            modifier = modifier.padding(horizontal = 16.dp)
-                        ) {
-                            Text("No")
-                        }
+                        Text("No")
+                    }
 
-                        Button(
-                            onClick = {
-                                NengPass.deletePassword(applicationContext.dataDir.canonicalPath, passwordName)
-                                setPasswordList(NengPass.getPasswordList(applicationContext.dataDir.canonicalPath))
-                                setDeletePasswordDialog(false)
-                            },
-                            colors = buttonColors(
-                                containerColor = MaterialTheme.colorScheme.onErrorContainer,
-                                contentColor = MaterialTheme.colorScheme.errorContainer
-                            ),
-                            modifier = modifier.padding(horizontal = 16.dp)
-                        ) {
-                            Text("Yes")
-                        }
+                    Button(
+                        onClick = {
+                            NengPass.deletePassword(applicationContext.dataDir.canonicalPath, passwordName)
+                            setPasswordList(NengPass.getPasswordList(applicationContext.dataDir.canonicalPath))
+                            setDeletePasswordDialog(false)
+                        },
+                        colors = buttonColors(
+                            containerColor = MaterialTheme.colorScheme.onErrorContainer,
+                            contentColor = MaterialTheme.colorScheme.errorContainer
+                        ),
+                        modifier = modifier.padding(horizontal = 16.dp)
+                    ) {
+                        Text("Yes")
                     }
                 }
             }
@@ -167,88 +161,70 @@ class PasswordListActivity : ComponentActivity() {
         passwordName: String
     ) {
         val password = NengPass.getPassword(applicationContext.dataDir.canonicalPath, masterKey, passwordName)
-
         val (isPasswordVisible, setIsPasswordVisible) = remember { mutableStateOf(false) }
 
-        Dialog(
-            onDismissRequest = {
-                setPasswordDialog(false)
-            }
-        ) {
-            Surface(
-                modifier = modifier,
-                color = MaterialTheme.colorScheme.secondaryContainer,
-                shape = RoundedCornerShape(16.dp)
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = modifier.padding(24.dp)
-                ) {
+        Dialog(onDismissRequest = { setPasswordDialog(false) }) {
+            BaseDialogSurface(modifier, MaterialTheme.colorScheme.secondaryContainer) {
+                Text(
+                    text = passwordName,
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                )
+
+                if (isPasswordVisible) {
                     Text(
-                        text = passwordName,
-                        style = MaterialTheme.typography.titleLarge,
+                        password,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer,
+                        modifier = modifier.padding(vertical = 16.dp)
+                    )
+                } else {
+                    val hiddenPasswordBuilder = StringBuilder()
+
+                    for (i in 1..(password.length)) {
+                        hiddenPasswordBuilder.append('*')
+                    }
+
+                    val hiddenPassword = hiddenPasswordBuilder.toString()
+
+                    Text(
+                        hiddenPassword,
+                        modifier = modifier.padding(vertical = 16.dp),
                         color = MaterialTheme.colorScheme.onSecondaryContainer
                     )
+                }
 
+                Button(
+                    onClick = { setIsPasswordVisible(!isPasswordVisible) },
+                    modifier = modifier.padding(top = 16.dp),
+                ) {
                     if (isPasswordVisible) {
-                        Text(
-                            password,
-                            color = MaterialTheme.colorScheme.onSecondaryContainer,
-                            modifier = modifier.padding(vertical = 16.dp)
-                        )
+                        Text("Hide Password")
                     } else {
-                        val hiddenPasswordBuilder = StringBuilder()
-
-                        for (i in 1..(password.length)) {
-                            hiddenPasswordBuilder.append('*')
-                        }
-
-                        val hiddenPassword = hiddenPasswordBuilder.toString()
-
-                        Text(
-                            hiddenPassword,
-                            modifier = modifier.padding(vertical = 16.dp),
-                            color = MaterialTheme.colorScheme.onSecondaryContainer
-                        )
+                        Text("Show Password")
                     }
+                }
 
-                    Button(
-                        onClick = {
-                            setIsPasswordVisible(!isPasswordVisible)
-                        },
-                        modifier = modifier.padding(top = 16.dp),
-                    ) {
-                        if (isPasswordVisible) {
-                            Text("Hide Password")
-                        } else {
-                            Text("Show Password")
-                        }
-                    }
+                val clipboard = LocalClipboardManager.current
 
-                    val clipboard = LocalClipboardManager.current
+                Button(
+                    onClick = { clipboard.setText(AnnotatedString(password)) },
+                    modifier = modifier.padding(top = 8.dp)
+                ) {
+                    Text("Copy to Clipboard!")
+                }
 
-                    Button(
-                        onClick = {
-                            clipboard.setText(AnnotatedString(password))
-                        },
-                        modifier = modifier.padding(top = 8.dp)
-                    ) {
-                        Text("Copy to Clipboard!")
-                    }
-
-                    Button(
-                        onClick = {
-                            setDeletePasswordDialog(true)
-                            setPasswordDialog(false)
-                        },
-                        modifier = modifier.padding(top = 8.dp),
-                        colors = buttonColors(
-                            containerColor = MaterialTheme.colorScheme.error,
-                            contentColor = MaterialTheme.colorScheme.onError,
-                        )
-                    ) {
-                        Text("Delete Password")
-                    }
+                Button(
+                    onClick = {
+                        setDeletePasswordDialog(true)
+                        setPasswordDialog(false)
+                    },
+                    modifier = modifier.padding(top = 8.dp),
+                    colors = buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error,
+                        contentColor = MaterialTheme.colorScheme.onError,
+                    )
+                ) {
+                    Text("Delete Password")
                 }
             }
         }
@@ -264,90 +240,59 @@ class PasswordListActivity : ComponentActivity() {
         val (newPasswordValue, setNewPasswordValue) = remember { mutableStateOf("") }
         val (newPasswordError, setNewPasswordError) = remember { mutableStateOf("") }
 
-        Dialog(
-            onDismissRequest = {
-                setDialog(false)
-            }
-        ) {
-            Surface(
-                modifier = modifier,
-                color = MaterialTheme.colorScheme.secondaryContainer,
-                shape = RoundedCornerShape(16.dp)
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = modifier.padding(24.dp)) {
-                    Text("Create a password", color = MaterialTheme.colorScheme.onSecondaryContainer)
+        Dialog(onDismissRequest = { setDialog(false) }) {
+            BaseDialogSurface(modifier, MaterialTheme.colorScheme.secondaryContainer) {
+                Text("Create a password", color = MaterialTheme.colorScheme.onSecondaryContainer)
 
-                    TextField(
-                        value = newPasswordName,
-                        onValueChange = { newValue: String ->
-                            setNewPasswordName(newValue)
-                        },
-                        label = {
-                            Text("Name")
-                        },
-                        modifier = modifier.padding(vertical = 16.dp)
-                    )
+                TextField(
+                    value = newPasswordName,
+                    onValueChange = { newValue: String -> setNewPasswordName(newValue) },
+                    label = { Text("Name") },
+                    modifier = modifier.padding(vertical = 16.dp)
+                )
 
-                    TextField(
-                        value = newPasswordValue,
-                        onValueChange = { newValue: String ->
-                            setNewPasswordValue(newValue)
-                        },
-                        label = {
-                            Text("Password")
-                        },
-                        visualTransformation = PasswordVisualTransformation(),
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Password,
-                            capitalization = KeyboardCapitalization.None,
-                            autoCorrect = false,
-                        ),
-                        modifier = modifier.padding(vertical = 16.dp)
-                    )
+                NengPass.PasswordField(modifier, "Password", newPasswordValue, setNewPasswordValue)
 
-                    if (newPasswordError != "") {
-                        Text(newPasswordError, color = MaterialTheme.colorScheme.error)
-                    }
+                if (newPasswordError != "") {
+                    Text(newPasswordError, color = MaterialTheme.colorScheme.error)
+                }
 
-                    Button(
-                        onClick = {
-                            if (newPasswordValue.length > 16) {
-                                setNewPasswordError("Your password is too long. Maximum length is 16")
-                            } else if (newPasswordName == "") {
-                                setNewPasswordError("Password must have a name")
-                            } else if (newPasswordValue == "") {
-                                setNewPasswordError("You didn't enter your password")
-                            } else {
-                                setNewPasswordError("")
-                                NengPass.savePassword(
-                                    applicationContext.dataDir.canonicalPath,
-                                    masterKey,
-                                    newPasswordName,
-                                    newPasswordValue
-                                )
-                                setNewPasswordName("")
-                                setNewPasswordValue("")
+                Button(
+                    onClick = {
+                        if (newPasswordValue.length > 16) {
+                            setNewPasswordError("Your password is too long. Maximum length is 16")
+                        } else if (newPasswordName == "") {
+                            setNewPasswordError("Password must have a name")
+                        } else if (newPasswordValue == "") {
+                            setNewPasswordError("You didn't enter your password")
+                        } else {
+                            setNewPasswordError("")
+                            NengPass.savePassword(
+                                applicationContext.dataDir.canonicalPath,
+                                masterKey,
+                                newPasswordName,
+                                newPasswordValue
+                            )
+                            setNewPasswordName("")
+                            setNewPasswordValue("")
 
-                                // Refresh the password list.
-                                val newPasswordList = NengPass.getPasswordList(applicationContext.dataDir.canonicalPath)
-                                setPasswordList(newPasswordList)
+                            // Refresh the password list.
+                            val newPasswordList = NengPass.getPasswordList(applicationContext.dataDir.canonicalPath)
+                            setPasswordList(newPasswordList)
 
-                                setDialog(false)
-                            }
-                        },
-                        modifier = modifier.padding(vertical = 16.dp)
-                    ) {
-                        Text("Create Password")
-                    }
+                            setDialog(false)
+                        }
+                    },
+                    modifier = modifier.padding(vertical = 16.dp)
+                ) {
+                    Text("Create Password")
+                }
 
-                    Button(
-                        onClick = {
-                            setNewPasswordValue(NengPass.generatePassword())
-                        },
-                        modifier = modifier.padding(vertical = 16.dp)
-                    ) {
-                        Text("Generate Random Password")
-                    }
+                Button(
+                    onClick = { setNewPasswordValue(NengPass.generatePassword()) },
+                    modifier = modifier.padding(vertical = 16.dp)
+                ) {
+                    Text("Generate Random Password")
                 }
             }
         }
@@ -384,15 +329,11 @@ class PasswordListActivity : ComponentActivity() {
             }
 
             Scaffold(
-                topBar = {
-                    TopBar(modifier = Modifier, setCreatePasswordDialog)
-                },
+                topBar = { TopBar(modifier = Modifier, setCreatePasswordDialog) },
                 modifier = modifier,
             ) { padding ->
                 Surface(
-                    modifier = modifier
-                        .padding(padding)
-                        .fillMaxSize(),
+                    modifier = modifier.padding(padding).fillMaxSize(),
                     color = MaterialTheme.colorScheme.background,
                 ) {
                     Column(
