@@ -26,6 +26,17 @@ import java.io.File
 
 class LoginActivity : ComponentActivity() {
     @Composable
+    fun ErrorDialog(modifier: Modifier = Modifier, pMessage: String, setNoDialog: (Boolean) -> Unit) {
+        Dialog(onDismissRequest = { setNoDialog(false) }) {
+            Surface(color = MaterialTheme.colorScheme.error, shape = RoundedCornerShape(16.dp)) {
+                Text(
+                    pMessage, color = MaterialTheme.colorScheme.onError, modifier = modifier.padding(24.dp)
+                )
+            }
+        }
+    }
+
+    @Composable
     fun SetMasterKey(modifier: Modifier = Modifier) {
         val (passwordValue, setPasswordValue) = remember { mutableStateOf("") }
         val (confirmPasswordValue, setConfirmPasswordValue) = remember { mutableStateOf("") }
@@ -34,31 +45,15 @@ class LoginActivity : ComponentActivity() {
 
         Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = modifier) {
             if (passwordNoMatchDialog) {
-                Dialog(
-                    onDismissRequest = { setPasswordNoMatchDialog(false) }
-                ) {
-                    Surface(color = MaterialTheme.colorScheme.error, shape = RoundedCornerShape(16.dp)) {
-                        Text(
-                            "The passwords that you provided did not match.",
-                            color = MaterialTheme.colorScheme.onError,
-                            modifier = modifier.padding(24.dp)
-                        )
-                    }
-                }
+                ErrorDialog(modifier, "The passwords that you provided did not match.", setPasswordNoMatchDialog)
             }
 
             if (passwordTooLongDialog) {
-                Dialog(
-                    onDismissRequest = { setPasswordTooLongDialog(true) }
-                ) {
-                    Surface(color = MaterialTheme.colorScheme.error, shape = RoundedCornerShape(16.dp)) {
-                        Text(
-                            "The password is too long. Maximum length is 32 characters.",
-                            color = MaterialTheme.colorScheme.onError,
-                            modifier = modifier.padding(24.dp)
-                        )
-                    }
-                }
+                ErrorDialog(
+                    modifier,
+                    "The password is too long. Maximum length is 32 characters.",
+                    setPasswordTooLongDialog
+                )
             }
 
             Text("Set your master key", fontSize = 6.em, modifier = modifier.padding(top = 24.dp))
@@ -90,25 +85,23 @@ class LoginActivity : ComponentActivity() {
                 modifier = modifier.padding(bottom = 24.dp)
             )
 
-            Button(
-                onClick = {
-                    if (passwordValue != confirmPasswordValue) {
-                        setPasswordNoMatchDialog(true)
-                        return@Button
-                    }
-
-                    if (passwordValue.length > 32) {
-                        setPasswordTooLongDialog(true)
-                        return@Button
-                    }
-
-                    NengPass.setMasterKey("${applicationInfo.dataDir}/master_key", passwordValue)
-
-                    val intent = Intent(applicationContext, PasswordListActivity::class.java)
-                    intent.putExtra("masterKey", passwordValue)
-                    startActivity(intent)
+            Button(onClick = {
+                if (passwordValue != confirmPasswordValue) {
+                    setPasswordNoMatchDialog(true)
+                    return@Button
                 }
-            ) {
+
+                if (passwordValue.length > 32) {
+                    setPasswordTooLongDialog(true)
+                    return@Button
+                }
+
+                NengPass.setMasterKey("${applicationInfo.dataDir}/master_key", passwordValue)
+
+                val intent = Intent(applicationContext, PasswordListActivity::class.java)
+                intent.putExtra("masterKey", passwordValue)
+                startActivity(intent)
+            }) {
                 Text("Ok")
             }
         }
@@ -121,17 +114,7 @@ class LoginActivity : ComponentActivity() {
 
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             if (passwordIncorrectDialog) {
-                Dialog (
-                    onDismissRequest = { setPasswordIncorrectDialog(false) }
-                ) {
-                    Surface(color = MaterialTheme.colorScheme.error, shape = RoundedCornerShape(16.dp)) {
-                        Text(
-                            "Sorry, but the password is incorrect.",
-                            color = MaterialTheme.colorScheme.onError,
-                            modifier = modifier.padding(24.dp)
-                        )
-                    }
-                }
+                ErrorDialog(modifier, "Sorry, but the password is incorrect", setPasswordIncorrectDialog)
             }
 
             Text("Login", fontSize = 6.em, modifier = modifier.padding(bottom = 32.dp, top = 16.dp))
@@ -148,17 +131,15 @@ class LoginActivity : ComponentActivity() {
                 modifier = modifier.padding(bottom = 32.dp, top = 16.dp)
             )
 
-            Button(
-                onClick = {
-                    if (NengPass.isMasterKeyCorrect("${applicationInfo.dataDir}/master_key", passwordValue)) {
-                        val intent = Intent(applicationContext, PasswordListActivity::class.java)
-                        intent.putExtra("masterKey", passwordValue)
-                        startActivity(intent)
-                    } else {
-                        setPasswordIncorrectDialog(true)
-                    }
+            Button(onClick = {
+                if (NengPass.isMasterKeyCorrect("${applicationInfo.dataDir}/master_key", passwordValue)) {
+                    val intent = Intent(applicationContext, PasswordListActivity::class.java)
+                    intent.putExtra("masterKey", passwordValue)
+                    startActivity(intent)
+                } else {
+                    setPasswordIncorrectDialog(true)
                 }
-            ) {
+            }) {
                 Text("Login")
             }
         }
@@ -177,8 +158,7 @@ class LoginActivity : ComponentActivity() {
             NengPassTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
+                    modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background
                 ) {
                     if (isMasterKeySet()) {
                         Login()
